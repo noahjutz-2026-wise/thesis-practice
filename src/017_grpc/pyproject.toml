@@ -12,8 +12,13 @@ dependencies = [
 ]
 
 [project.scripts]
-grpc-unity = "grpc_unity:main"
+grpc-unity = "grpc_unity.main:main"
 
 [build-system]
 requires = ["uv_build>=0.12.23,<0.13.0"]
 build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "grpcio-tools>=1.84.0",
+]

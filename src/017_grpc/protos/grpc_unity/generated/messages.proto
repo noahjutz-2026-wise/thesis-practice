@@ -1,6 +1,7 @@
-edition = "2024";
+edition = "2023";
 
 package grpc_unity.generated;
+
 option csharp_namespace = "GrpcUnity";
 
 service GreeterService {

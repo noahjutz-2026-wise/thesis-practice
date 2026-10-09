@@ -9,8 +9,7 @@ authors = [
 requires-python = ">=3.10.1, <=3.10.12"
 dependencies = [
     "gymnasium>=1.2.2",
-    "mlagents>=1.1.0",
-    "mlagents-envs>=1.1.0",
+    "mlagents-envs",
     "onnxruntime>=1.23.2",
     "ray[default, rllib]>=2.59.0",
     "shimmy>=2.0.1",
@@ -23,3 +22,7 @@ run = "unified_experiments.main:main"
 [build-system]
 requires = ["uv_build>=0.12.21,<0.13.0"]
 build-backend = "uv_build"
+
+[tool.uv.sources]
+mlagents = { git = "https://github.com/Unity-Technologies/ml-agents.git", subdirectory = "ml-agents", rev = "develop" }
+mlagents-envs = { git = "https://github.com/Unity-Technologies/ml-agents.git", subdirectory = "ml-agents-envs", rev = "develop" }

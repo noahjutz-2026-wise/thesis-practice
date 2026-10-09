@@ -87,6 +87,7 @@ def actor(out_queue, in_queue):
         logp_all.append(logp)
         if term or trunc:
             out_queue.put(episode_to_message(ep.to_numpy(), np.array(dist_inputs_all), np.array(logp_all)))
+            print(f"actor: episode len {len(ep.actions)}", flush=True)
             obs, _ = env.reset()
             ep = SingleAgentEpisode(observation_space=env.observation_space, action_space=env.action_space)
             ep.add_env_reset(observation=obs, infos={})
@@ -113,7 +114,7 @@ def learner(config, in_queue, out_queue):
         ts += sum(m["env_steps"] for m in msgs)
         lg.update(episodes=episodes, timesteps={"num_env_steps_sampled_lifetime": ts})
         seq += 1
-        state = lg.get_state(components=["learner"], inference_only=True)["learner"]["rl_module"]
+        state = lg.get_state(components=["learner"], inference_only=True)["learner"]["rl_module"]["default_policy"]
         out_queue.put({"type": "SET_STATE", "rl_module": state, WEIGHTS_SEQ_NO: seq})
         print(f"learner: updated on {ts} total steps, weights seq {seq}")
 

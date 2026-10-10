@@ -1,6 +1,7 @@
 import gymnasium as gym
 import numpy as np
 import torch
+from ray.rllib.algorithms.dreamerv3 import DreamerV3Config
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.core.columns import Columns
 from ray.rllib.core.rl_module.rl_module import RLModule
@@ -13,12 +14,16 @@ from ray.rllib.utils.spaces.space_utils import unbatch
 
 
 def main():
-    config = PPOConfig().environment("CartPole-v1")
-    ppo = config.build()
+    base_config = DreamerV3Config()
+
+    config = base_config.environment("CartPole-v1")
+    algo = config.build()
     env = gym.make("CartPole-v1", render_mode="human")
 
-    rl_module: RLModule = ppo.get_module()
-    env_to_module = config.build_env_to_module_connector(env=env)
+    rl_module: RLModule = algo.get_module()
+    env_to_module = config.build_env_to_module_connector(
+        env=env, spaces=None, device=None
+    )
     module_to_env = config.build_module_to_env_connector(env=env)
 
     while True:

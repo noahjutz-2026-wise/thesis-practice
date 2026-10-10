@@ -688,17 +688,24 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/53/39cd8c2f85e213fce1f32367c4bdbd3402d3bcde7d0826a1172a0f2c5cc0/gymnasium-1.2.2-py3-none-any.whl", hash = "sha256:f04ec362b1fdf73a8b327db5ef89384a3f2ba411e05d3521513414fbbb2199c8", size = 952118, upload-time = "2025-11-04T15:21:03.484Z" },
 ]
 
+[package.optional-dependencies]
+classic-control = [
+    { name = "pygame" },
+]
+
 [[package]]
 name = "hello-rllib"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "gymnasium", extra = ["classic-control"] },
     { name = "ray", extra = ["default", "rllib"] },
     { name = "torch" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "gymnasium", extras = ["classic-control"], specifier = ">=1.2.2" },
     { name = "ray", extras = ["default", "rllib"], specifier = ">=2.59.0" },
     { name = "torch", specifier = ">=2.14.1" },
 ]
@@ -1667,6 +1674,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/37/f5/1b5967e31b025a23f2f627ffea1f5a874cff0adb72fa5f5af6bb36394ad9/pydantic_core-2.50.0-cp315-cp315t-win_amd64.whl", hash = "sha256:36c49d4e1769127461b609f110d91963790091ffcc2de401ac1d3b2f6a63bd54", size = 2148456, upload-time = "2026-10-08T14:30:05.971Z" },
     { url = "https://files.pythonhosted.org/packages/48/15/213d6fe84816e8a5ed7b7539ecebb3f14c20739c2469f4e372f0f15bb042/pydantic_core-2.50.0-cp315-cp315t-win_arm64.whl", hash = "sha256:f3abcabb04503023e1053add24472e78878de0bfd5c8a93686be01f4032c363c", size = 2175368, upload-time = "2026-10-08T14:30:08.989Z" },
 ]
+
+[[package]]
+name = "pygame"
+version = "2.6.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/49/cc/08bba60f00541f62aaa252ce0cfbd60aebd04616c0b9574f755b583e45ae/pygame-2.6.1.tar.gz", hash = "sha256:56fb02ead529cee00d415c3e007f75e0780c655909aaa8e8bf616ee09c9feb1f", size = 14808125, upload-time = "2024-09-29T13:41:34.698Z" }
 
 [[package]]
 name = "python-dateutil"

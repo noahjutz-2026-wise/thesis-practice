@@ -9,6 +9,7 @@ from ray.rllib.env.external.env_runner_server_for_external_inference import (
 )
 from ray.rllib.env.single_agent_env_runner import SingleAgentEnvRunner
 from ray.rllib.env.single_agent_episode import SingleAgentEpisode
+from ray.rllib.utils.spaces.space_utils import unbatch
 
 
 def main():
@@ -18,6 +19,7 @@ def main():
 
     rl_module: RLModule = ppo.get_module()
     env_to_module = config.build_env_to_module_connector(env=env)
+    module_to_env = config.build_module_to_env_connector(env=env)
 
     while True:
         episode = SingleAgentEpisode()
@@ -27,12 +29,24 @@ def main():
         terminated = False
         truncated = False
         while not (terminated or truncated):
+            shared_data = {}
             batch = env_to_module(
-                episodes=[episode], rl_module=rl_module, batch={}, explore=True
+                episodes=[episode],
+                rl_module=rl_module,
+                batch={},
+                explore=True,
+                shared_data=shared_data,
             )
-            logits = rl_module.forward_exploration(batch)[Columns.ACTION_DIST_INPUTS]
-            dist = rl_module.get_exploration_action_dist_cls().from_logits(logits)
-            action = dist.sample()[0].item()
+            fwd_out = rl_module.forward_exploration(batch)
+            to_env = module_to_env(
+                rl_module=rl_module,
+                batch=fwd_out,
+                episodes=[episode],
+                explore=True,
+                shared_data=shared_data,
+            )
+            action_batch = to_env.pop(Columns.ACTIONS)
+            action = unbatch(action_batch)[0]
             observation, reward, terminated, truncated, info = env.step(action)
             episode.add_env_step(
                 observation,

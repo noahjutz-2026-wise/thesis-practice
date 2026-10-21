@@ -1,7 +1,7 @@
 from build123d import *
 
 
-def main():
+def maze() -> BuildPart:
     with BuildPart() as part:
         with BuildSketch() as base_sketch:
             Rectangle(20, 20)
@@ -10,6 +10,4 @@ def main():
             Circle(5)
         extrude(amount=-5, mode=Mode.SUBTRACT)
 
-    result = part.part
-
-    export_step(result, "out.step")
+    return part

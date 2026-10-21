@@ -1,4 +1,6 @@
+import sys
 import time
+from importlib import resources
 
 from yacv_server import show
 
@@ -6,9 +8,17 @@ from labyrinth_game_cad.maze import maze
 
 
 def main():
-    show([maze()])
+    f = (
+        resources.files("labyrinth_game_cad")
+        / "layouts"
+        / "cyberrunner_hard_layout.json"
+    )
+    show([maze(f)])
     while True:
-        time.sleep(1)
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            sys.exit()
 
 
 if __name__ == "__main__":

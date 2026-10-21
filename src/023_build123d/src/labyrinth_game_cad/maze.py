@@ -55,5 +55,7 @@ def maze(layout_path: str) -> tuple[BuildPart, BuildPart, BuildPart]:
                         Line((a, y), (b, y))
                     trace(ln.line, line_width=WALL_WIDTH)
             extrude(amount=WALL_HEIGHT)
+            top_edges = walls.edges().filter_by(Plane.XY).group_by(Axis.Z)[-1]
+            fillet(top_edges, radius=WALL_WIDTH / 2 * 0.85)
 
         return floor, outer_walls, walls

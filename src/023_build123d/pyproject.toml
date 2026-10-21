@@ -3,14 +3,14 @@ name = "labyrinth-game-cad"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }
-]
+authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "build123d>=0.13.0",
+]
 
 [project.scripts]
-labyrinth-game-cad = "labyrinth_game_cad:main"
+labyrinth-game-cad = "labyrinth_game_cad.main:main"
 
 [build-system]
 requires = ["uv_build>=0.13.4,<0.14.0"]

@@ -1,0 +1,4 @@
+*.json
+*.svg
+.wordcount_cache.json
+__pycache__/

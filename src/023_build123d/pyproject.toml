@@ -5,7 +5,11 @@ description = "Add your description here"
 readme = "README.md"
 authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.14"
-dependencies = ["build123d>=0.13.0"]
+dependencies = [
+    "build123d>=0.13.0",
+    "coacd>=1.0.14",
+    "trimesh>=5.1.1",
+]
 
 [project.scripts]
 server = "labyrinth_game_cad.server:main"

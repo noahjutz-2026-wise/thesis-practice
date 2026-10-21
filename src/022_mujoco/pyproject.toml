@@ -3,16 +3,12 @@ name = "hello-mujoco"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }
-]
+authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.10"
-dependencies = [
-    "mujoco>=3.16.0",
-]
+dependencies = ["mujoco>=3.16.0"]
 
 [project.scripts]
-hello-mujoco = "hello_mujoco:main"
+sim = "hello_mujoco.main:main"
 
 [build-system]
 requires = ["uv_build>=0.13.1,<0.14.0"]

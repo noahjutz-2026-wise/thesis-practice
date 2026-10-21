@@ -12,22 +12,13 @@ WALL_HEIGHT = 6
 HOLE_DIAMETER = 14.5
 
 
-def maze(layout_path: str) -> BuildPart:
+def maze(layout_path: str) -> tuple[BuildPart, BuildPart, BuildPart]:
     with open(layout_path) as f:
         layout = json.load(f)
-        with BuildPart() as part:
+        with BuildPart() as floor:
             with BuildSketch(Plane.XY) as _plate:
                 Rectangle(WIDTH, LENGTH)
             extrude(amount=-2)
-
-            with BuildSketch(Plane.XY) as _outer_walls:
-                Rectangle(WIDTH, LENGTH)
-                Rectangle(
-                    WIDTH - 2 * OUTER_WALL_WIDTH,
-                    LENGTH - 2 * OUTER_WALL_WIDTH,
-                    mode=Mode.SUBTRACT,
-                )
-            extrude(amount=HEIGHT)
 
             with BuildSketch(Plane.XY) as _holes:
                 for y, z in layout["holes"]:
@@ -37,6 +28,17 @@ def maze(layout_path: str) -> BuildPart:
                         Circle(HOLE_DIAMETER / 2)
             extrude(until=Until.FIRST, mode=Mode.SUBTRACT)
 
+        with BuildPart() as outer_walls:
+            with BuildSketch(Plane.XY) as _outer_walls:
+                Rectangle(WIDTH, LENGTH)
+                Rectangle(
+                    WIDTH - 2 * OUTER_WALL_WIDTH,
+                    LENGTH - 2 * OUTER_WALL_WIDTH,
+                    mode=Mode.SUBTRACT,
+                )
+            extrude(amount=HEIGHT)
+
+        with BuildPart() as walls:
             with BuildSketch(Plane.XY) as _walls:
                 for a, b, y in layout["walls_v"]:
                     a = a * M - LENGTH / 2 + OUTER_WALL_WIDTH
@@ -54,4 +56,4 @@ def maze(layout_path: str) -> BuildPart:
                     trace(ln.line, line_width=WALL_WIDTH)
             extrude(amount=WALL_HEIGHT)
 
-        return part
+        return floor, outer_walls, walls

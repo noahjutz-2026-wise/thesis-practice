@@ -9,6 +9,7 @@ dependencies = ["build123d>=0.13.0"]
 
 [project.scripts]
 server = "labyrinth_game_cad.server:main"
+export = "labyrinth_game_cad.export:main"
 
 [build-system]
 requires = ["uv_build>=0.13.4,<0.14.0"]

@@ -13,7 +13,7 @@ def main():
         / "layouts"
         / "cyberrunner_hard_layout.json"
     )
-    show([maze(f)])
+    show(*maze(f))
     while True:
         try:
             time.sleep(1)

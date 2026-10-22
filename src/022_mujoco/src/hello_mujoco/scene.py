@@ -1,5 +1,4 @@
 import mujoco
-from PIL import Image
 
 
 def scene() -> mujoco.MjSpec:
@@ -15,25 +14,29 @@ def scene() -> mujoco.MjSpec:
         pos=[0, 0, -100],
     )
 
-    body = spec.worldbody.add_body(name="room", pos=[0, 0, 1], mass=1)
+    maze = spec.worldbody.add_body(name="board", pos=[0, 0, 1], mass=1)
 
     for name in ["floor", "outer", "walls"]:
         spec.add_mesh(name=name, file=f"../023_build123d/{name}.stl")
-        body.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=name)
+        maze.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=name)
 
-    body.add_joint(
+    maze.add_joint(
         name="joint_x",
         type=mujoco.mjtJoint.mjJNT_HINGE,
         axis=[1, 0, 0],
         limited=True,
         range=[-10, 10],
     )
-    body.add_joint(
+    maze.add_joint(
         name="joint_y",
         type=mujoco.mjtJoint.mjJNT_HINGE,
         axis=[0, 1, 0],
         limited=True,
         range=[-10, 10],
     )
+
+    ball = spec.worldbody.add_body(name="ball", pos=[0, 0, 10], mass=0.07)
+    ball.add_geom(type=mujoco.mjtGeom.mjGEOM_SPHERE, size=[7])
+    ball.add_freejoint()
 
     return spec

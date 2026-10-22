@@ -5,7 +5,6 @@ import mujoco
 from mujoco.rendering.classic.gl_context import os
 
 MESH_PATH = Path("../023_build123d/")
-FLOOR_PATH = MESH_PATH / "floor_parts"
 
 
 def scene() -> mujoco.MjSpec:
@@ -23,14 +22,12 @@ def scene() -> mujoco.MjSpec:
 
     maze = spec.worldbody.add_body(name="board", pos=[0, 0, 1])
 
-    for name in ["outer", "walls"]:
-        spec.add_mesh(name=name, file=str(MESH_PATH / f"{name}.stl"))
-        maze.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=name)
-
-    for p in os.listdir(FLOOR_PATH):
-        name = basename(p)
-        spec.add_mesh(name=name, file=str(FLOOR_PATH / p))
-        maze.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=name)
+    for name in ["floor", "outer", "walls"]:
+        base_path = MESH_PATH / f"{name}_parts"
+        for p in os.listdir(base_path):
+            name = basename(p)
+            spec.add_mesh(name=name, file=str(base_path / p))
+            maze.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=name)
 
     maze.add_joint(
         name="joint_x",

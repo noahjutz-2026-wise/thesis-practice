@@ -5,13 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.10"
-dependencies = [
-    "mujoco>=3.16.0",
-    "pillow>=12.3.0",
-]
+dependencies = ["mujoco>=3.16.0", "pillow>=12.3.0"]
 
 [project.scripts]
-sim = "hello_mujoco.main:main"
+build-xml = "hello_mujoco.export:export"
 
 [build-system]
 requires = ["uv_build>=0.13.1,<0.14.0"]

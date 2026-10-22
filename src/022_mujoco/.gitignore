@@ -1,3 +1,4 @@
 *.png
 MUJOCO_LOG.TXT
 export.xml
+MJDATA.TXT

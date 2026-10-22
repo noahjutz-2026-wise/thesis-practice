@@ -1,4 +1,11 @@
+from os.path import basename
+from pathlib import Path
+
 import mujoco
+from mujoco.rendering.classic.gl_context import os
+
+MESH_PATH = Path("../023_build123d/")
+FLOOR_PATH = MESH_PATH / "floor_parts"
 
 
 def scene() -> mujoco.MjSpec:
@@ -14,10 +21,15 @@ def scene() -> mujoco.MjSpec:
         pos=[0, 0, -100],
     )
 
-    maze = spec.worldbody.add_body(name="board", pos=[0, 0, 1], mass=1)
+    maze = spec.worldbody.add_body(name="board", pos=[0, 0, 1])
 
-    for name in ["floor", "outer", "walls"]:
-        spec.add_mesh(name=name, file=f"../023_build123d/{name}.stl")
+    for name in ["outer", "walls"]:
+        spec.add_mesh(name=name, file=str(MESH_PATH / f"{name}.stl"))
+        maze.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=name)
+
+    for p in os.listdir(FLOOR_PATH):
+        name = basename(p)
+        spec.add_mesh(name=name, file=str(FLOOR_PATH / p))
         maze.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=name)
 
     maze.add_joint(
@@ -35,8 +47,8 @@ def scene() -> mujoco.MjSpec:
         range=[-10, 10],
     )
 
-    ball = spec.worldbody.add_body(name="ball", pos=[0, 0, 10], mass=0.07)
-    ball.add_geom(type=mujoco.mjtGeom.mjGEOM_SPHERE, size=[7])
+    ball = spec.worldbody.add_body(name="ball", pos=[20, 20, 30])
+    ball.add_geom(type=mujoco.mjtGeom.mjGEOM_SPHERE, size=[7], mass=1000)
     ball.add_freejoint()
 
     return spec

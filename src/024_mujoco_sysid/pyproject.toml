@@ -3,16 +3,12 @@ name = "mujoco-sysid"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }
-]
+authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.14"
-dependencies = [
-    "mujoco[sysid]>=3.17.0",
-]
+dependencies = ["dynamixel-sdk>=4.1.0", "mujoco[sysid]>=3.17.0"]
 
 [project.scripts]
-mujoco-sysid = "mujoco_sysid:main"
+sysid = "mujoco_sysid.main:main"
 
 [build-system]
 requires = ["uv_build>=0.13.5,<0.14.0"]

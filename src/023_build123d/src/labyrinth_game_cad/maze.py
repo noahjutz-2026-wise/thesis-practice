@@ -9,7 +9,7 @@ HEIGHT = 22
 OUTER_WALL_WIDTH = 7.5
 WALL_WIDTH = 5
 WALL_HEIGHT = 6
-HOLE_DIAMETER = 14.5
+HOLE_DIAMETER = 15.5
 
 
 def maze(layout_path: str) -> tuple[BuildPart, BuildPart, BuildPart]:

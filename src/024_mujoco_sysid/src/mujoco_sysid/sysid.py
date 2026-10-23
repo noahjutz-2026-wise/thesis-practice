@@ -4,6 +4,7 @@ from mujoco import sysid
 
 MODEL_XML = "../022_mujoco/export.xml"
 
+
 spec = mujoco.MjSpec.from_file(MODEL_XML)
 model = spec.compile()
 data = mujoco.MjData(model)
@@ -71,11 +72,13 @@ for axis in ("x", "y"):
 
 initial_state = sysid.create_initial_state(model, data.qpos, data.qvel, data.act)
 
-control_ts = sysid.TimeSeries.from_names(
-    np.arange(1000) * 0.001, np.ones((1000, 2)), model
+t = np.arange(0, 10, 0.001)
+
+control_ts = sysid.TimeSeries.from_control_names(
+    t, np.hstack([np.sin(t[:, None]), np.sin(t[:, None])]), model
 )
-sensor_ts = sysid.TimeSeries.from_control_names(
-    np.arange(1000) * 0.001, np.ones((1000, 2)), model
+sensor_ts = sysid.TimeSeries.from_names(
+    t, np.hstack([np.sin(t[:, None] - 0.1), np.sin(t[:, None] - 0.1)]), model
 )
 
 ms = sysid.ModelSequences("ms", spec, "measured", initial_state, control_ts, sensor_ts)
@@ -83,6 +86,19 @@ ms = sysid.ModelSequences("ms", spec, "measured", initial_state, control_ts, sen
 residual_fn = sysid.build_residual_fn(models_sequences=[ms])
 opt_params, opt_result = sysid.optimize(initial_params=params, residual_fn=residual_fn)
 sysid.save_results("results/", [ms], params, opt_params, opt_result, residual_fn)
+
+report = sysid.default_report(
+    models_sequences=[ms],
+    initial_params=params,
+    opt_params=opt_params,
+    residual_fn=residual_fn,
+    opt_result=opt_result,
+    title="Labyrinth Game Optimal Parameters",
+    generate_videos=False,
+)
+
+print(report.build())
+report.save("report.html")
 
 
 def main():

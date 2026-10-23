@@ -1,7 +1,8 @@
-import math
 import os
+import sys
 import time
 
+import cv2 as cv
 from dynamixel_sdk import PacketHandler, PortHandler
 
 DEV_DYN = "/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FTA2U4MF-if00-port0"
@@ -13,17 +14,36 @@ os.timerfd_settime(fd, initial=1 / FREQUENCY, interval=1 / FREQUENCY)
 
 
 def main():
-    port = PortHandler(DEV_DYN)
-    packet = PacketHandler(2.0)
-    port.openPort()
-    port.setBaudRate(1_000_000)
-
-    for dxl_id in (1, 2):
-        packet.write1ByteTxRx(port, dxl_id, 64, 1)
+    cap = cv.VideoCapture(DEV_CAM)
+    if not cap.isOpened():
+        sys.exit(1)
 
     while True:
-        os.read(fd, 8)
-        print("hi")
+        ret, frame = cap.read()
+
+        if not ret:
+            print("not ret")
+
+        timestamp_ms = cap.get(cv.CAP_PROP_POS_MSEC)
+        now_ms = time.clock_gettime(time.CLOCK_MONOTONIC) * 1000.0
+        latency_ms = now_ms - timestamp_ms
+
+        print(f"Frame Latency: {latency_ms:.2f} ms")
+
+        cv.imshow("frame", frame)
+        cv.waitKey(1)
+
+    # while True:
+    #     os.read(fd, 8)
+    #     print("hi")
+
+    # port = PortHandler(DEV_DYN)
+    # packet = PacketHandler(2.0)
+    # port.openPort()
+    # port.setBaudRate(1_000_000)
+
+    # for dxl_id in (1, 2):
+    #     packet.write1ByteTxRx(port, dxl_id, 64, 1)
 
     # t0 = time.time()
     # try:

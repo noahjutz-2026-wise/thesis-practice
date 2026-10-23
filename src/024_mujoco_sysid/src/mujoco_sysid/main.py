@@ -33,6 +33,9 @@ def main():
         cv.imshow("frame", frame)
         cv.waitKey(1)
 
+        print(frame)
+        break
+
     # while True:
     #     os.read(fd, 8)
     #     print("hi")

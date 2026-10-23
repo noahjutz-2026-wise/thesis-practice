@@ -8,7 +8,7 @@ requires-python = ">=3.14"
 dependencies = ["dynamixel-sdk>=4.1.0", "mujoco[sysid]>=3.17.0"]
 
 [project.scripts]
-sysid = "mujoco_sysid.main:main"
+sysid = "mujoco_sysid.sysid:main"
 
 [build-system]
 requires = ["uv_build>=0.13.5,<0.14.0"]

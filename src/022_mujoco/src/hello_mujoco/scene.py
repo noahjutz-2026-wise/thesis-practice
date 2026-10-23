@@ -17,7 +17,7 @@ def scene() -> mujoco.MjSpec:
         type=mujoco.mjtGeom.mjGEOM_PLANE,
         size=[0, 0, 0.1],
         rgba=[1, 0, 0, 1],
-        pos=[0, 0, -0.05],
+        pos=[0, 0, -0.15],
     )
 
     maze = spec.worldbody.add_body(name="board", pos=[0, 0, 0])
@@ -50,4 +50,33 @@ def scene() -> mujoco.MjSpec:
     ball.add_geom(type=mujoco.mjtGeom.mjGEOM_SPHERE, size=[0.007], mass=0.005)
     ball.add_freejoint()
 
+    spec.add_sensor(
+        type=mujoco.mjtSensor.mjSENS_JOINTPOS,
+        name="sensor_x",
+        objtype=mujoco.mjtObj.mjOBJ_JOINT,
+        objname="joint_x",
+    )
+
+    spec.add_sensor(
+        type=mujoco.mjtSensor.mjSENS_JOINTPOS,
+        name="sensor_y",
+        objtype=mujoco.mjtObj.mjOBJ_JOINT,
+        objname="joint_y",
+    )
+
+    spec.add_actuator(
+        type=mujoco.mjtActuator.mjACTUATOR_VELOCITY,
+        trntype=mujoco.mjtTrn.mjTRN_JOINT,
+        name="motor_x",
+        target="joint_x",
+        ctrlrange=[-1, 1],
+    )
+
+    spec.add_actuator(
+        type=mujoco.mjtActuator.mjACTUATOR_VELOCITY,
+        trntype=mujoco.mjtTrn.mjTRN_JOINT,
+        name="motor_y",
+        target="joint_y",
+        ctrlrange=[-1, 1],
+    )
     return spec

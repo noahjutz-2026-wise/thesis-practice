@@ -6,10 +6,9 @@ readme = "README.md"
 authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.14"
 dependencies = [
+    "babyros>=0.1.10",
     "dynamixel-sdk>=4.1.0",
-    "iceoryx2>=0.10.0",
     "mujoco[sysid]>=3.17.0",
-    "opencv-python>=5.0.0.93",
 ]
 
 [project.scripts]

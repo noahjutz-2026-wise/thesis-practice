@@ -16,8 +16,12 @@ def camera(device: cv.VideoCapture):
     ctx = zmq.Context.instance()
     pub = ctx.socket(zmq.PUB)
     pub.connect(IN)
+
     while True:
-        pub.send_pyobj({"hi": "hello world"})
+        ret, frame = device.read()
+        if not ret:
+            continue
+        pub.send_pyobj(frame)
 
 
 def main():

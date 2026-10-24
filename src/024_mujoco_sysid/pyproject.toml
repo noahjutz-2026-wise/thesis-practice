@@ -9,6 +9,8 @@ dependencies = [
     "babyros>=0.1.10",
     "dynamixel-sdk>=4.1.0",
     "mujoco[sysid]>=3.17.0",
+    "opencv-python>=5.0.0.93",
+    "pyzmq>=27.2.0",
 ]
 
 [project.scripts]

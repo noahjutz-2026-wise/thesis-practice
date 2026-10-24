@@ -1,3 +1,5 @@
+import pickle
+
 import cv2 as cv
 import zmq
 
@@ -11,7 +13,8 @@ def main():
     sub.connect(OUT)
 
     while True:
-        t, img = sub.recv_pyobj()
+        topic, payload = sub.recv_multipart()
+        t, img = pickle.loads(payload)
         print(t)
         cv.imshow("frame", img)
         cv.waitKey(1)

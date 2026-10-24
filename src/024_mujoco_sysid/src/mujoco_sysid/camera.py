@@ -19,9 +19,10 @@ def camera(device: cv.VideoCapture):
 
     while True:
         ret, frame = device.read()
+        t = device.get(cv.CAP_PROP_POS_MSEC)
         if not ret:
             continue
-        pub.send_pyobj(frame)
+        pub.send_pyobj([t, frame])
 
 
 def main():

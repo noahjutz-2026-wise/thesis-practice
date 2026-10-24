@@ -1,3 +1,4 @@
+import cv2 as cv
 import zmq
 
 from mujoco_sysid.broker import OUT
@@ -10,8 +11,10 @@ def main():
     sub.connect(OUT)
 
     while True:
-        x = sub.recv_pyobj()
-        print(x)
+        t, img = sub.recv_pyobj()
+        print(t)
+        cv.imshow("frame", img)
+        cv.waitKey(1)
 
 
 if __name__ == "__main__":

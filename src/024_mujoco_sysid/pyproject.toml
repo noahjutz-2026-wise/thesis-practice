@@ -7,6 +7,7 @@ authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.14"
 dependencies = [
     "babyros>=0.1.10",
+    "crs2r-image-processing",
     "dynamixel-sdk>=4.1.0",
     "mujoco[sysid]>=3.17.0",
     "opencv-python>=5.0.0.93",
@@ -19,3 +20,6 @@ sysid = "mujoco_sysid.sysid:main"
 [build-system]
 requires = ["uv_build>=0.13.5,<0.14.0"]
 build-backend = "uv_build"
+
+[tool.uv.sources]
+crs2r-image-processing = { git = "https://github.com/noahjutz-2026-wise/crs2r-image-processing" }

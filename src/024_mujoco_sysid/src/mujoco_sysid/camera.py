@@ -6,7 +6,7 @@ import zmq
 
 from mujoco_sysid.broker import IN, OUT
 
-TOPIC_KEY = b"cam"
+CAM_TOPIC_KEY = b"cam"
 DEV_CAM = "/dev/v4l/by-id/usb-e-con_systems_See3CAM_24CUG_2509460D-video-index0"
 
 
@@ -25,7 +25,7 @@ def camera(device: cv.VideoCapture):
         t = device.get(cv.CAP_PROP_POS_MSEC)
         if not ret:
             continue
-        pub.send_multipart([TOPIC_KEY, pickle.dumps([t, frame])])
+        pub.send_multipart([CAM_TOPIC_KEY, pickle.dumps([t, frame])])
 
 
 def main():

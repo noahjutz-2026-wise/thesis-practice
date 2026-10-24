@@ -4,12 +4,13 @@ import cv2 as cv
 import zmq
 
 from mujoco_sysid.broker import OUT
+from mujoco_sysid.camera import CAM_TOPIC_KEY
 
 
 def main():
     ctx = zmq.Context.instance()
     sub = ctx.socket(zmq.SUB)
-    sub.setsockopt(zmq.SUBSCRIBE, b"")
+    sub.setsockopt(zmq.SUBSCRIBE, CAM_TOPIC_KEY)
     sub.connect(OUT)
 
     while True:

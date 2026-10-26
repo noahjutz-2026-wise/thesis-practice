@@ -25,6 +25,7 @@ def main():
             t, img = pickle.loads(payload)
             x_hat, _P, inputs, _xb, _yb = pipeline.estimate(img)
             dic = {
+                "img": pipeline.measurements.annotate(img),
                 "x_b": x_hat[0],
                 "y_b": x_hat[1],
                 "vx_b": x_hat[2],

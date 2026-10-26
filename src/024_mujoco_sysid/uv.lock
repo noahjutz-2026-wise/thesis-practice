@@ -266,7 +266,7 @@ wheels = [
 [[package]]
 name = "crs2r-image-processing"
 version = "0.1.0"
-source = { git = "https://github.com/noahjutz-2026-wise/crs2r-image-processing#859b4e7b6ff3689b07edb9971ddfde6f640a1be2" }
+source = { git = "https://github.com/noahjutz-2026-wise/crs2r-image-processing#7c70bd6c19ce95957778a39f15def11a7724f753" }
 dependencies = [
     { name = "numpy" },
     { name = "opencv-python" },

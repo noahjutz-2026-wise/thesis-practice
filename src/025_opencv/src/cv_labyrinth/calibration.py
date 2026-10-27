@@ -16,8 +16,7 @@ def main():
     objpoints = []
     imgpoints = []
     for im in imgs:
-        img = cv.imread(im)
-        img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+        img = cv.imread(im, cv.IMREAD_GRAYSCALE)
 
         found, corners = cv.findChessboardCorners(img, CHECKERBOARD, None)
         if not found:

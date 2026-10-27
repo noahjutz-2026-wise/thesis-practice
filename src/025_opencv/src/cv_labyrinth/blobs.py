@@ -21,33 +21,28 @@ def main():
 
     im = cv2.bitwise_and(img_bgr, img_bgr, mask=mask1)
 
-    cv2.imshow("f", mask1)
-    cv2.waitKey(0)
-
-    sys.exit()
-
     params = cv2.SimpleBlobDetector.Params()
-    params.minThreshold = 10
-    params.maxThreshold = 200
+    params.filterByColor = False
 
     # Filter by Area
+    d = 10
+    area = np.pi * (d / 2) ** 2
     params.filterByArea = True
-    params.minArea = 10
+    params.minArea = area * 0.5
+    params.maxArea = area * 1.5
 
-    # Filter by Circularity
     params.filterByCircularity = True
     params.minCircularity = 0.1
-
-    # Filter by Convexity
-    params.filterByConvexity = True
-    params.minConvexity = 0.87
-
-    # Filter by Inertia
     params.filterByInertia = True
-    params.minInertiaRatio = 0.01
+    params.minInertiaRatio = 0.1
+    params.filterByConvexity = True
+    params.minConvexity = 0.1
 
     detector = cv2.SimpleBlobDetector.create(params)
-    keypoints = detector.detect(img)
+    keypoints = detector.detect(im)
+    if not keypoints:
+        print("no keypoints")
+        sys.exit()
     output = cv2.drawKeypoints(
         img_bgr,
         keypoints,

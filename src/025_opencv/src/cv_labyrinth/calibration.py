@@ -6,6 +6,7 @@ import numpy as np
 
 IMAGE_DIR = Path("~/Pictures/calibration").expanduser()
 CHECKERBOARD = (8, 6)
+DEV_CAM = "/dev/v4l/by-id/usb-e-con_systems_See3CAM_24CUG_2509460D-video-index0"
 
 
 def main():
@@ -50,12 +51,12 @@ def main():
     map1, map2 = cv.fisheye.initUndistortRectifyMap(
         K, D, np.eye(3, dtype=np.float64), K, img_size, cv.CV_32FC1
     )
-    print(map1)
-    print(map2)
-    undistorted = cv.remap(img, map1, map2, interpolation=cv.INTER_LINEAR)
 
-    cv.imshow("f", undistorted)
+    cap = cv.VideoCapture(DEV_CAM)
     while True:
+        ret, frame = cap.read()
+        undistorted = cv.remap(frame, map1, map2, interpolation=cv.INTER_LINEAR)
+        cv.imshow("f", undistorted)
         cv.waitKey(1)
 
 

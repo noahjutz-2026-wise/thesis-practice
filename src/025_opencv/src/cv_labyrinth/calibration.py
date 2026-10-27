@@ -11,7 +11,7 @@ CHECKERBOARD = (8, 6)
 def main():
     objp = np.zeros((1, CHECKERBOARD[0] * CHECKERBOARD[1], 3), np.float32)
     objp[0, :, :2] = np.mgrid[0 : CHECKERBOARD[0], 0 : CHECKERBOARD[1]].T.reshape(-1, 2)
-    imgs = IMAGE_DIR.glob("*.jpg")
+    imgs = [img for img in IMAGE_DIR.glob("*.jpg")]
     objpoints = []
     imgpoints = []
     for im in imgs:
@@ -43,6 +43,20 @@ def main():
 
     print(K)
     print(D)
+
+    img = cv.imread(imgs[0])
+    h, w = img.shape[:2]
+    img_size = (w, h)
+    map1, map2 = cv.fisheye.initUndistortRectifyMap(
+        K, D, np.eye(3, dtype=np.float64), K, img_size, cv.CV_32FC1
+    )
+    print(map1)
+    print(map2)
+    undistorted = cv.remap(img, map1, map2, interpolation=cv.INTER_LINEAR)
+
+    cv.imshow("f", undistorted)
+    while True:
+        cv.waitKey(1)
 
 
 if __name__ == "__main__":

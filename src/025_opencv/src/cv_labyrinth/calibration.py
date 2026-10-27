@@ -7,6 +7,7 @@ import numpy as np
 IMAGE_DIR = Path("~/Pictures/calibration").expanduser()
 CHECKERBOARD = (8, 6)
 DEV_CAM = "/dev/v4l/by-id/usb-e-con_systems_See3CAM_24CUG_2509460D-video-index0"
+OUT_CONFIG = "calibration.yaml"
 
 
 def main():
@@ -41,22 +42,19 @@ def main():
         D,
     )
 
-    print(K)
-    print(D)
-
     img = cv.imread(imgs[0])
     h, w = img.shape[:2]
-    img_size = (w, h)
-    map1, map2 = cv.fisheye.initUndistortRectifyMap(
-        K, D, np.eye(3, dtype=np.float64), K, img_size, cv.CV_32FC1
-    )
+    # img_size = (w, h)
+    # map1, map2 = cv.fisheye.initUndistortRectifyMap(
+    #     K, D, np.eye(3, dtype=np.float64), K, img_size, cv.CV_32FC1
+    # )
 
-    cap = cv.VideoCapture(DEV_CAM)
-    while True:
-        ret, frame = cap.read()
-        undistorted = cv.remap(frame, map1, map2, interpolation=cv.INTER_LINEAR)
-        cv.imshow("f", undistorted)
-        cv.waitKey(1)
+    fs = cv.FileStorage(OUT_CONFIG, cv.FILE_STORAGE_WRITE)
+    fs.write("image_width", w)
+    fs.write("image_height", h)
+    fs.write("camera_matrix", K)
+    fs.write("distortion_coefficients", D)
+    fs.release()
 
 
 if __name__ == "__main__":

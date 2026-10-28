@@ -53,12 +53,13 @@ def track(
         if keypoints:
             pos2 = keypoints[0].pt
             cv2.circle(subimg, np.array(pos2).astype(int), 20, (255, 0, 0))
+            estimate[i, :] = pos2 + pos - 50
         subimgs.append(subimg)
 
     cv2.imshow("", np.hstack(subimgs))
     cv2.waitKey(50)
 
-    return np.zeros(())
+    return estimate
 
 
 def main():
@@ -68,7 +69,8 @@ def main():
         markers = np.fromstring(data.replace(",", " "), sep=" ").reshape(-1, 2)
 
     scale_factor = np.array([1280 / 640, 720 / 400])
-    scaled_points = markers * scale_factor
+    markers *= scale_factor
+    estimate = markers
 
     detector = build_detector()
     cap = cv2.VideoCapture(DEV_CAM)
@@ -78,7 +80,7 @@ def main():
         if not ret:
             print("framer error")
             continue
-        track(preprocess(frame), scaled_points, scaled_points, detector.detect)
+        track(preprocess(frame), estimate, markers, detector.detect)
 
 
 if __name__ == "__main__":

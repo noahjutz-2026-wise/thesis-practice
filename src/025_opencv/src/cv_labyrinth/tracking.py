@@ -60,9 +60,21 @@ def main():
     calib = cv2.FileStorage(CONFIG_DIR / "calibration.yaml", cv2.FILE_STORAGE_READ)
     K = calib.getNode("camera_matrix").mat()
     D = calib.getNode("distortion_coefficients").mat()
+    w = calib.getNode("image_width").real()
+    w = int(w)
+    h = calib.getNode("image_height").real()
+    h = int(h)
     calib.release()
+    newCameraMatrix = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
+        K, D, (w, h), np.eye(3), balance=0.0
+    )
     map1, map2 = cv2.fisheye.initUndistortRectifyMap(
-        K, D, np.eye(3, dtype=np.float64), K, (1280, 720), cv2.CV_32FC1
+        K,
+        D,
+        np.eye(3, dtype=np.float64),
+        newCameraMatrix,
+        (1280, 720),
+        cv2.CV_32FC1,
     )
 
     markers_f = CONFIG_DIR.glob("*.csv").__next__()
@@ -75,7 +87,10 @@ def main():
     estimate = markers.copy()
 
     detector = build_detector()
-    cap = cv2.VideoCapture(DEV_CAM)
+    cap = cv2.VideoCapture(DEV_CAM, cv2.CAP_V4L2)
+    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
     while True:
         ret, frame = cap.read()

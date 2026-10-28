@@ -58,9 +58,12 @@ def track(
 
 def main():
     calib = cv2.FileStorage(CONFIG_DIR / "calibration.yaml", cv2.FILE_STORAGE_READ)
-    D = calib.getNode("camera_matrix").mat()
-    K = calib.getNode("distortion_coefficients").mat()
+    K = calib.getNode("camera_matrix").mat()
+    D = calib.getNode("distortion_coefficients").mat()
     calib.release()
+    map1, map2 = cv2.fisheye.initUndistortRectifyMap(
+        K, D, np.eye(3, dtype=np.float64), K, (1280, 720), cv2.CV_32FC1
+    )
 
     markers_f = CONFIG_DIR.glob("*.csv").__next__()
     with open(markers_f, "r") as f:
@@ -83,6 +86,7 @@ def main():
 
         for pos in estimate:
             cv2.circle(frame, pos.astype(int), 20, (255, 0, 0))
+        frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR)
         cv2.imshow("f", frame)
         cv2.waitKey(5)
 

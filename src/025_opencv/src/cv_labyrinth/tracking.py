@@ -44,20 +44,12 @@ def track(
     estimate: NDArray,
     detect: Callable[[MatLike], Sequence[cv2.KeyPoint]],
 ) -> NDArray:
-
-    subimgs = []
     for i, pos in enumerate(estimate):
         subimg = cv2.getRectSubPix(img, (100, 100), tuple(pos))
         keypoints = detect(subimg)
         if keypoints:
             pos2 = keypoints[0].pt
-            cv2.circle(subimg, np.array(pos2).astype(int), 20, (255, 0, 0))
             estimate[i, :] = pos2 + pos - 50
-        subimgs.append(subimg)
-
-    cv2.imshow("", np.hstack(subimgs))
-    cv2.waitKey(50)
-
     return estimate
 
 
@@ -77,9 +69,27 @@ def main():
     while True:
         ret, frame = cap.read()
         if not ret:
-            print("framer error")
+            print("frame error")
             continue
         track(preprocess(frame), estimate, detector.detect)
+
+        for i, pos in enumerate(estimate):
+            cv2.circle(
+                img=frame,
+                center=pos.astype(int),
+                radius=20,
+                color=tuple(
+                    int(c)
+                    for c in cv2.cvtColor(
+                        np.uint8(
+                            [[[np.random.default_rng(i).integers(0, 180), 255, 255]]]
+                        ),
+                        cv2.COLOR_HSV2BGR,
+                    )[0, 0]
+                ),
+            )
+        cv2.imshow("f", frame)
+        cv2.waitKey(5)
 
 
 if __name__ == "__main__":

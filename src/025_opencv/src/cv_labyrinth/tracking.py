@@ -1,18 +1,20 @@
+from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Callable, Sequence
 
 import cv2
 import numpy as np
 from cv2.typing import MatLike
 from numpy.typing import NDArray
 
+DEV_CAM = "/dev/v4l/by-id/usb-e-con_systems_See3CAM_24CUG_2509460D-video-index0"
 IMAGE_DIR = Path.home()
 CONFIG_DIR = Path.cwd()
 HSV_BOUNDS = ((95, 177, 86), (112, 255, 162))
+HSV_BOUNDS = ((49, 128, 108), (136, 255, 255))
 
 
 def build_detector():
-    d = 10
+    d = 15
 
     params = cv2.SimpleBlobDetector.Params()
     params.filterByColor = False
@@ -50,16 +52,11 @@ def track(
         keypoints = detect(subimg)
         if keypoints:
             pos2 = keypoints[0].pt
-            print(pos - pos2)
             cv2.circle(subimg, np.array(pos2).astype(int), 20, (255, 0, 0))
-        else:
-            cv2.circle(subimg, (50, 50), 10, (255, 0, 0))
-            print(f".{pos}")
         subimgs.append(subimg)
 
     cv2.imshow("", np.hstack(subimgs))
-    while True:
-        cv2.waitKey(1)
+    cv2.waitKey(50)
 
     return np.zeros(())
 
@@ -73,13 +70,15 @@ def main():
     scale_factor = np.array([1280 / 640, 720 / 400])
     scaled_points = markers * scale_factor
 
-    img = cv2.imread(IMAGE_DIR.glob("*.jpg").__next__(), cv2.IMREAD_COLOR_BGR)
-    if img is None:
-        raise FileNotFoundError()
-
     detector = build_detector()
+    cap = cv2.VideoCapture(DEV_CAM)
 
-    track(preprocess(img), scaled_points, scaled_points, detector.detect)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            print("framer error")
+            continue
+        track(preprocess(frame), scaled_points, scaled_points, detector.detect)
 
 
 if __name__ == "__main__":

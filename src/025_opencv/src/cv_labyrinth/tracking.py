@@ -44,6 +44,9 @@ def track(
     estimate: NDArray,
     detect: Callable[[MatLike], Sequence[cv2.KeyPoint]],
 ) -> NDArray:
+    if (cv2.countNonZero(img) / img.size) > 0.01:
+        print("flash frame")
+        return estimate
     for i, pos in enumerate(estimate):
         subimg = cv2.getRectSubPix(img, (100, 100), tuple(pos))
         keypoints = detect(subimg)

@@ -76,21 +76,8 @@ def main():
             continue
         track(preprocess(frame), estimate, detector.detect)
 
-        for i, pos in enumerate(estimate):
-            cv2.circle(
-                img=frame,
-                center=pos.astype(int),
-                radius=20,
-                color=tuple(
-                    int(c)
-                    for c in cv2.cvtColor(
-                        np.uint8(
-                            [[[np.random.default_rng(i).integers(0, 180), 255, 255]]]
-                        ),
-                        cv2.COLOR_HSV2BGR,
-                    )[0, 0]
-                ),
-            )
+        for pos in estimate:
+            cv2.circle(frame, pos.astype(int), 20, (255, 0, 0))
         cv2.imshow("f", frame)
         cv2.waitKey(5)
 

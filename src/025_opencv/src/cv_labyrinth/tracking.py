@@ -41,7 +41,6 @@ def preprocess(img: MatLike) -> MatLike:
 
 def track(
     img: MatLike,
-    markers: NDArray,
     estimate: NDArray,
     detect: Callable[[MatLike], Sequence[cv2.KeyPoint]],
 ) -> NDArray:
@@ -80,7 +79,7 @@ def main():
         if not ret:
             print("framer error")
             continue
-        track(preprocess(frame), estimate, markers, detector.detect)
+        track(preprocess(frame), estimate, detector.detect)
 
 
 if __name__ == "__main__":

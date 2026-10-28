@@ -70,7 +70,7 @@ def main():
 
     scale_factor = np.array([1280 / 640, 720 / 400])
     markers *= scale_factor
-    estimate = markers
+    estimate = markers.copy()
 
     detector = build_detector()
     cap = cv2.VideoCapture(DEV_CAM)

@@ -7,18 +7,19 @@ from numpy.typing import NDArray
 
 IMAGE_DIR = Path.home()
 CONFIG_DIR = Path.cwd()
+HSV_BOUNDS = ((95, 177, 86), (112, 255, 162))
 
 
 def track(img: MatLike, markers: NDArray, estimate: NDArray) -> NDArray:
-    img = cv2.copyMakeBorder(img, 50, 50, 50, 50, cv2.BORDER_CONSTANT)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, *HSV_BOUNDS)
     for marker in markers:
         print(marker)
-        cv2.circle(img, tuple(marker.astype(int)), 20, (255, 0, 0))
 
     subimgs = []
     for i, pos in enumerate(estimate):
         x, y = pos.astype(int)
-        subimg = cv2.getRectSubPix(img, (100, 100), tuple(pos))
+        subimg = cv2.getRectSubPix(mask, (100, 100), tuple(pos))
         subimgs.append(subimg)
         print(pos)
 

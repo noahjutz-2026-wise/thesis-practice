@@ -42,7 +42,7 @@ def build_detector():
 
 
 def build_rect(dx, dy) -> NDArray:
-    signs = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
+    signs = np.array([[-1, 1], [1, 1], [1, -1], [-1, -1]], dtype=float)
     objp = signs * [dx, dy]
     objp = np.pad(objp, ((0, 0), (0, 1)))
     objp = np.ascontiguousarray(objp)

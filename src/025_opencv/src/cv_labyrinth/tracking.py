@@ -72,18 +72,19 @@ def track(
     return estimate
 
 
-def pose(object_points: NDArray, image_points: NDArray, K: NDArray, D: NDArray) -> None:
-    image_points = image_points.reshape(-1, 1, 2)
-
+def pose_fn(object_points: NDArray, K: NDArray, D: NDArray):
     object_points = object_points.reshape(-1, 1, 3)
 
-    ret, rvec, tvec = cv2.fisheye.solvePnP(
-        object_points, image_points, K, D, flags=cv2.SOLVEPNP_IPPE
-    )
+    def pose(image_points: NDArray) -> None:
+        image_points = image_points.reshape(-1, 1, 2)
 
-    print("==")
-    print(rvec)
-    print(tvec)
+        ret, rvec, _tvec = cv2.fisheye.solvePnP(
+            object_points, image_points, K, D, flags=cv2.SOLVEPNP_IPPE
+        )
+
+        return rvec
+
+    return pose
 
 
 def main():
@@ -129,6 +130,9 @@ def main():
         dx=OUTER_X / 2 - DOT_DIAMETER, dy=OUTER_Y / 2 - DOT_OUTER_DY - DOT_DIAMETER
     )
 
+    pose_inner = pose_fn(objp_inner, K, D)
+    pose_outer = pose_fn(objp_outer, K, D)
+
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -137,7 +141,11 @@ def main():
         track(preprocess(frame), estimate, detector.detect)
 
         # PnP
-        pose(objp_inner, estimate[4:], K, D)
+        print("==")
+        r_inner = pose_inner(estimate[:4])
+        print(r_inner)
+        r_outer = pose_outer(estimate[4:])
+        print(r_outer)
 
         est_undistorted = estimate.copy().reshape(-1, 1, 2)
         est_undistorted = cv2.fisheye.undistortPoints(

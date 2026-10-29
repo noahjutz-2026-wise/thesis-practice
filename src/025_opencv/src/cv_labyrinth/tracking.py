@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from cv2.typing import MatLike
 from numpy.typing import NDArray
+from scipy.spatial.transform import Rotation
 
 DEV_CAM = "/dev/v4l/by-id/usb-e-con_systems_See3CAM_24CUG_2509460D-video-index0"
 IMAGE_DIR = Path.home()
@@ -150,7 +151,10 @@ def main():
         # PnP
         r_inner = pose_inner(estimate[:4])
         r_outer = pose_outer(estimate[4:])
-        print(relative_pose(r_inner, r_outer))
+        R = relative_pose(r_inner, r_outer)
+        rot = Rotation.from_matrix(R)
+        roll_x, pitch_y, yaw_z = rot.as_euler("xyz", degrees=False)
+        print(roll_x, pitch_y, yaw_z)
 
         est_undistorted = estimate.copy().reshape(-1, 1, 2)
         est_undistorted = cv2.fisheye.undistortPoints(

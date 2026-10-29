@@ -153,8 +153,11 @@ def main():
         r_outer = pose_outer(estimate[4:])
         R = relative_pose(r_inner, r_outer)
         rot = Rotation.from_matrix(R)
-        roll_x, pitch_y, yaw_z = rot.as_euler("xyz", degrees=False)
-        print(roll_x, pitch_y, yaw_z)
+        roll_x, pitch_y, yaw_z = rot.as_euler("xyz", degrees=True)
+        print("===")
+        print(roll_x)
+        print(pitch_y)
+        print(yaw_z)
 
         est_undistorted = estimate.copy().reshape(-1, 1, 2)
         est_undistorted = cv2.fisheye.undistortPoints(

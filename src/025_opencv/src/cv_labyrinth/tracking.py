@@ -99,9 +99,14 @@ def main():
             continue
         track(preprocess(frame), estimate, detector.detect)
 
-        for pos in estimate:
-            cv2.circle(frame, pos.astype(int), 20, (255, 0, 0))
+        est_undistorted = estimate.copy().reshape(-1, 1, 2)
+        est_undistorted = cv2.fisheye.undistortPoints(
+            est_undistorted, K, D, R=np.eye(3), P=newCameraMatrix
+        ).squeeze()
+
         frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR)
+        for pos in est_undistorted:
+            cv2.circle(frame, pos.astype(int), 20, (0, 255, 0))
         cv2.imshow("f", frame)
         cv2.waitKey(5)
 

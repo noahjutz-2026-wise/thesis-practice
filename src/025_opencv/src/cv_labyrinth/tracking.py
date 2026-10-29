@@ -87,6 +87,13 @@ def pose_fn(object_points: NDArray, K: NDArray, D: NDArray):
     return pose
 
 
+def relative_pose(rvec1, rvec2):
+    r1, _ = cv2.Rodrigues(rvec1)
+    r2, _ = cv2.Rodrigues(rvec2)
+    r12 = r1.T @ r2
+    return r12
+
+
 def main():
     calib = cv2.FileStorage(CONFIG_DIR / "calibration.yaml", cv2.FILE_STORAGE_READ)
     K = calib.getNode("camera_matrix").mat()
@@ -141,11 +148,9 @@ def main():
         track(preprocess(frame), estimate, detector.detect)
 
         # PnP
-        print("==")
         r_inner = pose_inner(estimate[:4])
-        print(r_inner)
         r_outer = pose_outer(estimate[4:])
-        print(r_outer)
+        print(relative_pose(r_inner, r_outer))
 
         est_undistorted = estimate.copy().reshape(-1, 1, 2)
         est_undistorted = cv2.fisheye.undistortPoints(

@@ -12,6 +12,12 @@ CONFIG_DIR = Path.cwd()
 HSV_BOUNDS = ((95, 177, 86), (112, 255, 162))
 HSV_BOUNDS = ((49, 128, 108), (136, 255, 255))
 
+OUTER_X = 0.330
+OUTER_Y = 0.286
+INNER_X = 0.290
+INNER_Y = 0.245
+WALL_THICKNESS = 0.075
+
 
 def build_detector():
     d = 15

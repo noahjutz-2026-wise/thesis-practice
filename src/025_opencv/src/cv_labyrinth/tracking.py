@@ -149,8 +149,8 @@ def main():
         track(preprocess(frame), estimate, detector.detect)
 
         # PnP
-        r_inner = pose_inner(estimate[:4])
-        r_outer = pose_outer(estimate[4:])
+        r_inner = pose_inner(estimate[4:])
+        r_outer = pose_outer(estimate[:4])
         R = relative_pose(r_inner, r_outer)
         rot = Rotation.from_matrix(R)
         roll_x, pitch_y, yaw_z = rot.as_euler("xyz", degrees=True)

@@ -165,8 +165,12 @@ def main():
         ).squeeze()
 
         frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR)
-        for pos in est_undistorted:
-            cv2.circle(frame, pos.astype(int), 20, (0, 255, 0))
+        polylines = [
+            points.astype(np.int32).reshape(-1, 1, 2)
+            for points in (est_undistorted[:4], est_undistorted[4:])
+        ]
+
+        cv2.polylines(frame, polylines, isClosed=True, color=(255, 0, 0), thickness=2)
         cv2.imshow("f", frame)
         cv2.waitKey(5)
 

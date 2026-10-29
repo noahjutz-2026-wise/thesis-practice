@@ -40,21 +40,12 @@ def build_detector():
     return cv2.SimpleBlobDetector.create(params)
 
 
-def build_object_points() -> NDArray:
-    inner_dx = INNER_X / 2 - DOT_DIAMETER
-    inner_dy = INNER_Y / 2 - DOT_DIAMETER
-    outer_dx = OUTER_X / 2 - DOT_DIAMETER
-    outer_dy = OUTER_Y / 2 - DOT_OUTER_DY - DOT_DIAMETER
-
+def build_rect(dx, dy) -> NDArray:
     signs = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
-    object_points = np.vstack(
-        (
-            signs * [inner_dx, inner_dy],
-            signs * [outer_dx, outer_dy],
-        )
-    )
-    object_points_3d = np.hstack((object_points, np.zeros((8, 1))))
-    return object_points_3d
+    objp = signs * [dx, dy]
+    objp = np.pad(objp, ((0, 0), (0, 1)))
+    objp = np.ascontiguousarray(objp)
+    return objp
 
 
 def preprocess(img: MatLike) -> MatLike:
@@ -81,8 +72,18 @@ def track(
     return estimate
 
 
-def pose(objectPoints: NDArray, imagePoints: NDArray, K: NDArray, D: NDArray) -> None:
-    pass
+def pose(object_points: NDArray, image_points: NDArray, K: NDArray, D: NDArray) -> None:
+    image_points = image_points.reshape(-1, 1, 2)
+
+    object_points = object_points.reshape(-1, 1, 3)
+
+    ret, rvec, tvec = cv2.fisheye.solvePnP(
+        object_points, image_points, K, D, flags=cv2.SOLVEPNP_IPPE
+    )
+
+    print("==")
+    print(rvec)
+    print(tvec)
 
 
 def main():
@@ -121,7 +122,12 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
-    object_points = build_object_points()
+    objp_inner = build_rect(
+        dx=INNER_X / 2 - DOT_DIAMETER, dy=INNER_Y / 2 - DOT_DIAMETER
+    )
+    objp_outer = build_rect(
+        dx=OUTER_X / 2 - DOT_DIAMETER, dy=OUTER_Y / 2 - DOT_OUTER_DY - DOT_DIAMETER
+    )
 
     while True:
         ret, frame = cap.read()
@@ -129,6 +135,9 @@ def main():
             print("frame error")
             continue
         track(preprocess(frame), estimate, detector.detect)
+
+        # PnP
+        pose(objp_inner, estimate[4:], K, D)
 
         est_undistorted = estimate.copy().reshape(-1, 1, 2)
         est_undistorted = cv2.fisheye.undistortPoints(

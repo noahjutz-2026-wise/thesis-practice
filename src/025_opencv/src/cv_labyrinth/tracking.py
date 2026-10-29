@@ -14,7 +14,7 @@ HSV_BOUNDS = ((95, 177, 86), (112, 255, 162))
 HSV_BOUNDS = ((49, 128, 108), (136, 255, 255))
 
 OUTER_X = 0.330
-OUTER_Y = 0.286
+OUTER_Y = 0.287
 INNER_X = 0.290
 INNER_Y = 0.245
 WALL_THICKNESS = 0.0075
@@ -154,10 +154,6 @@ def main():
         R = relative_pose(r_inner, r_outer)
         rot = Rotation.from_matrix(R)
         roll_x, pitch_y, yaw_z = rot.as_euler("xyz", degrees=True)
-        print("===")
-        print(roll_x)
-        print(pitch_y)
-        print(yaw_z)
 
         est_undistorted = estimate.copy().reshape(-1, 1, 2)
         est_undistorted = cv2.fisheye.undistortPoints(
@@ -172,7 +168,19 @@ def main():
 
         cv2.polylines(frame, polylines, isClosed=True, color=(255, 0, 0), thickness=2)
         cv2.imshow("f", frame)
-        cv2.waitKey(5)
+        key = cv2.waitKey(5)
+        if key == 27:
+            print("===")
+            print("points estimate")
+            print(estimate)
+            print("points estimate undistorted")
+            print(est_undistorted)
+            print("rotation matrix")
+            print(R)
+            print("roll x deg")
+            print(roll_x)
+            print("pitch y deg")
+            print(pitch_y)
 
 
 if __name__ == "__main__":

@@ -16,7 +16,9 @@ OUTER_X = 0.330
 OUTER_Y = 0.286
 INNER_X = 0.290
 INNER_Y = 0.245
-WALL_THICKNESS = 0.075
+WALL_THICKNESS = 0.0075
+DOT_OUTER_DY = 0.050 + WALL_THICKNESS
+DOT_DIAMETER = 0.008
 
 
 def build_detector():
@@ -36,6 +38,23 @@ def build_detector():
     params.minConvexity = 0.1
 
     return cv2.SimpleBlobDetector.create(params)
+
+
+def build_object_points() -> NDArray:
+    inner_dx = INNER_X / 2 - DOT_DIAMETER
+    inner_dy = INNER_Y / 2 - DOT_DIAMETER
+    outer_dx = OUTER_X / 2 - DOT_DIAMETER
+    outer_dy = OUTER_Y / 2 - DOT_OUTER_DY - DOT_DIAMETER
+
+    signs = np.array([[-1, -1], [1, -1], [1, 1], [-1, 1]], dtype=float)
+    object_points = np.vstack(
+        (
+            signs * [inner_dx, inner_dy],
+            signs * [outer_dx, outer_dy],
+        )
+    )
+    object_points_3d = np.hstack((object_points, np.zeros((8, 1))))
+    return object_points_3d
 
 
 def preprocess(img: MatLike) -> MatLike:
@@ -60,6 +79,10 @@ def track(
             pos2 = keypoints[0].pt
             estimate[i, :] = pos2 + pos - 50
     return estimate
+
+
+def pose(objectPoints: NDArray, imagePoints: NDArray, K: NDArray, D: NDArray) -> None:
+    pass
 
 
 def main():
@@ -97,6 +120,8 @@ def main():
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+
+    object_points = build_object_points()
 
     while True:
         ret, frame = cap.read()

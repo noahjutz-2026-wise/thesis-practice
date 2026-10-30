@@ -43,8 +43,8 @@ class LabyrinthEnv(MujocoEnv):
         self, action: NDArray[np.float32]
     ) -> tuple[NDArray[np.float64], np.float64, bool, bool, dict[str, np.float64]]:
         ctrl = np.zeros(self.model.nu)
-        ctrl[self.ix] = math.sin(self.data.time) * 0.008
-        ctrl[self.iy] = math.cos(self.data.time) * 0.008
+        ctrl[self.ix] = action[0]
+        ctrl[self.iy] = action[1]
         self.do_simulation(ctrl, self.frame_skip)
 
         rx = self.data.sensor("sensor_board_rot_x").data

@@ -5,7 +5,7 @@ import cv2
 
 from mujoco_gymnasium import labyrinth_env
 
-MUJOCO_XML = Path.home() / "Documents/repos/thesis-practice/src/022_mujoco/export.xml"
+MUJOCO_XML = Path(__file__).parent.parent.parent.parent / "022_mujoco/export.xml"
 
 
 def main():
@@ -18,7 +18,7 @@ def main():
         obs, reward, terminated, truncated, info = env.step(action)
         print(obs)
 
-        if i % 1 == 0:
+        if i % 100 == 0:
             frame = env.render()  # RGB, shape (H, W, 3)
             cv2.imshow("sim", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
             if cv2.waitKey(1) & 0xFF == ord("q"):

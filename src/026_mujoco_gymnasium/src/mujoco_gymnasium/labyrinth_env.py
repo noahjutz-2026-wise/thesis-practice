@@ -1,10 +1,17 @@
+import json
 import math
+from pathlib import Path
 
 import mujoco
 import numpy as np
 from gymnasium.envs.mujoco.mujoco_env import DEFAULT_SIZE, MujocoEnv
 from gymnasium.spaces import Space
 from numpy.typing import NDArray
+
+WAYPOINTS_PATH = (
+    Path(__file__).parents[3]
+    / "023_build123d/src/labyrinth_game_cad/layouts/cyberrunner_hard_layout.json"
+)
 
 
 class LabyrinthEnv(MujocoEnv):
@@ -38,6 +45,8 @@ class LabyrinthEnv(MujocoEnv):
 
         self.ix = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, "motor_x")
         self.iy = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, "motor_y")
+        with open(WAYPOINTS_PATH, "r") as f:
+            self.waypoints = json.load(f)["waypoints"]
 
     def step(
         self, action: NDArray[np.float32]

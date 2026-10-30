@@ -43,11 +43,11 @@ class LabyrinthEnv(MujocoEnv):
         self, action: NDArray[np.float32]
     ) -> tuple[NDArray[np.float64], np.float64, bool, bool, dict[str, np.float64]]:
         ctrl = np.zeros(self.model.nu)
-        ctrl[self.ix] = math.sin(self.data.time) * 0.005
-        ctrl[self.iy] = math.cos(self.data.time) * 0.005
+        ctrl[self.ix] = math.sin(self.data.time) * 0.008
+        ctrl[self.iy] = math.cos(self.data.time) * 0.008
         self.do_simulation(ctrl, self.frame_skip)
 
-        obs = np.zeros(())  # TODO
+        obs = self.data.sensordata  # TODO
         reward = np.float64(0)  # TODO
         terminated = False  # TODO
         truncated = False  # TODO

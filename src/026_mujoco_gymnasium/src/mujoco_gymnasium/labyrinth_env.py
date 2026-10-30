@@ -47,7 +47,11 @@ class LabyrinthEnv(MujocoEnv):
         ctrl[self.iy] = math.cos(self.data.time) * 0.008
         self.do_simulation(ctrl, self.frame_skip)
 
-        obs = self.data.sensordata  # TODO
+        rx = self.data.sensor("sensor_board_rot_x").data
+        ry = self.data.sensor("sensor_board_rot_y").data
+        bp = self.data.sensor("sensor_ball_pos").data[:-1]
+
+        obs = np.concatenate([rx, ry, bp])
         reward = np.float64(0)  # TODO
         terminated = False  # TODO
         truncated = False  # TODO

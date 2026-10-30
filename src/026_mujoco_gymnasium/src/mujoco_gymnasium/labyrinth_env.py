@@ -7,6 +7,7 @@ import numpy as np
 from gymnasium.envs.mujoco.mujoco_env import DEFAULT_SIZE, MujocoEnv
 from gymnasium.spaces import Space
 from numpy.typing import NDArray
+from scipy.spatial import KDTree
 
 WAYPOINTS_PATH = (
     Path(__file__).parents[3]
@@ -46,7 +47,9 @@ class LabyrinthEnv(MujocoEnv):
         self.ix = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, "motor_x")
         self.iy = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, "motor_y")
         with open(WAYPOINTS_PATH, "r") as f:
-            self.waypoints = json.load(f)["waypoints"]
+            waypoints = json.load(f)["waypoints"]
+            self.waypoints = np.asarray(waypoints)
+            self.waypoints_tree = KDTree(self.waypoints)
 
     def step(
         self, action: NDArray[np.float32]
@@ -56,11 +59,19 @@ class LabyrinthEnv(MujocoEnv):
         ctrl[self.iy] = action[1]
         self.do_simulation(ctrl, self.frame_skip)
 
+        # observation
         rx = self.data.sensor("sensor_board_rot_x").data
         ry = self.data.sensor("sensor_board_rot_y").data
         bp = self.data.sensor("sensor_ball_pos").data
-
         obs = np.concatenate([rx, ry, bp[:-1]])
+
+        # reward
+
+        dist, i = self.waypoints_tree.query(bp[:-1])
+        closest = self.waypoints[i]
+
+        print(i)
+
         reward = np.float64(0)  # TODO
         terminated = bp[-1] < -0.05
         truncated = False  # TODO

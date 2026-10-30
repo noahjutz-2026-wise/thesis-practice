@@ -52,16 +52,23 @@ def scene() -> mujoco.MjSpec:
 
     spec.add_sensor(
         type=mujoco.mjtSensor.mjSENS_JOINTPOS,
-        name="sensor_x",
+        name="sensor_rot_x",
         objtype=mujoco.mjtObj.mjOBJ_JOINT,
         objname="joint_x",
     )
 
     spec.add_sensor(
         type=mujoco.mjtSensor.mjSENS_JOINTPOS,
-        name="sensor_y",
+        name="sensor_rot_y",
         objtype=mujoco.mjtObj.mjOBJ_JOINT,
         objname="joint_y",
+    )
+
+    spec.add_sensor(
+        type=mujoco.mjtSensor.mjSENS_FRAMEPOS,
+        name="sensor_ball_pos",
+        objtype=mujoco.mjtObj.mjOBJ_BODY,
+        objname="ball",
     )
 
     spec.add_actuator(

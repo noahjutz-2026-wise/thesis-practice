@@ -14,9 +14,7 @@ def main():
     iy = mujoco.mj_name2id(m, mujoco.mjtObj.mjOBJ_ACTUATOR, "motor_y")
     with mujoco.viewer.launch_passive(m, d) as viewer:
         while True:
-            d.ctrl[ix] = math.sin(d.time) * 0.005
-            d.ctrl[iy] = math.cos(d.time) * 0.005
+            d.ctrl[ix] = math.sin(d.time) * 0.008
+            d.ctrl[iy] = math.cos(d.time) * 0.008
             mujoco.mj_step(m, d)
             viewer.sync()
-        while True:
-            pass

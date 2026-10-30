@@ -49,11 +49,11 @@ class LabyrinthEnv(MujocoEnv):
 
         rx = self.data.sensor("sensor_board_rot_x").data
         ry = self.data.sensor("sensor_board_rot_y").data
-        bp = self.data.sensor("sensor_ball_pos").data[:-1]
+        bp = self.data.sensor("sensor_ball_pos").data
 
-        obs = np.concatenate([rx, ry, bp])
+        obs = np.concatenate([rx, ry, bp[:-1]])
         reward = np.float64(0)  # TODO
-        terminated = False  # TODO
+        terminated = bp[-1] < -0.05
         truncated = False  # TODO
         info = {}  # TODO
         return obs, reward, terminated, truncated, info

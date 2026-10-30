@@ -4,7 +4,7 @@ wordcount_history.py
 
 A dependency-free Python script that:
 1. Iterates over git commits in the thesis repository.
-2. Computes the word count for each commit using the Typst -> Pandoc
+2. Computes the word count for each commit using the Typst -> pdftotext
    compilation pipeline (as described in the README).
 3. Caches results in a JSON file to avoid re-compiling existing commits.
 4. Exports a JSON array of entries:
@@ -60,8 +60,8 @@ def get_commit_list(repo_dir, rev_range="HEAD", reverse=True):
 def compute_commit_wc(repo_dir, commit_hash):
     """
     Computes word count for a given commit according to README instructions:
-    typst compile ... --features html --format html ... src/main.typ src/main.html &&
-    pandoc src/main.html -t plain --wrap none -o main.txt
+    typst compile ... --pdf-standard a-3b ... src/main.typ &&
+    pdftotext src/main.pdf main.txt
     """
     with tempfile.TemporaryDirectory() as tmpdir:
         # Extract archive of commit at this commit
@@ -124,7 +124,6 @@ def compute_commit_wc(repo_dir, commit_hash):
             os.makedirs(os.path.dirname(sub_dir), exist_ok=True)
             shutil.copytree(lit_repo, sub_dir, dirs_exist_ok=True)
 
-        html_out = os.path.join(tmpdir, "main.html")
         short_hash = commit_hash[:7]
 
         # Get tag if any
@@ -141,10 +140,8 @@ def compute_commit_wc(repo_dir, commit_hash):
             "--ignore-system-fonts",
             "--font-path",
             os.path.join(tmpdir, "src"),
-            "--features",
-            "html",
-            "--format",
-            "html",
+            "--pdf-standard",
+            "a-3b",
             "--input",
             f"GIT_HASH={short_hash}",
             "--input",
@@ -152,28 +149,32 @@ def compute_commit_wc(repo_dir, commit_hash):
             "--root",
             tmpdir,
             src_main,
-            html_out,
         ]
 
-        t_res = subprocess.run(typst_cmd, capture_output=True, text=True)
+        t_res = subprocess.run(typst_cmd, capture_output=True, text=True, cwd=tmpdir)
         if t_res.returncode != 0:
             return None
 
-        pandoc_cmd = [
-            "pandoc",
-            html_out,
-            "-t",
-            "plain",
-            "--wrap",
-            "none",
-        ]
-        p_res = subprocess.run(pandoc_cmd, capture_output=True, text=True)
-        if p_res.returncode != 0:
+        pdf_path = os.path.join(tmpdir, "src", "main.pdf")
+        if not os.path.isfile(pdf_path):
             return None
 
-        # Count words
-        words = p_res.stdout.split()
-        return len(words)
+        txt_path = os.path.join(tmpdir, "main.txt")
+        pdf_res = subprocess.run(
+            ["pdftotext", pdf_path, txt_path],
+            capture_output=True,
+            text=True,
+            cwd=tmpdir,
+        )
+        if pdf_res.returncode != 0:
+            return None
+
+        try:
+            with open(txt_path, "r", encoding="utf-8", errors="ignore") as f:
+                words = f.read().split()
+            return len(words)
+        except Exception:
+            return None
 
 
 def generate_svg_plot(entries, output_svg_path, title="Thesis Word Count Over Time"):

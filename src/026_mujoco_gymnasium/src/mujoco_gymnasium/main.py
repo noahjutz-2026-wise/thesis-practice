@@ -5,7 +5,7 @@ import cv2
 
 from mujoco_gymnasium import labyrinth_env
 
-MUJOCO_XML = Path(__file__).parent.parent.parent.parent / "022_mujoco/export.xml"
+MUJOCO_XML = Path(__file__).parents[3] / "022_mujoco/export.xml"
 
 
 def main():

@@ -22,9 +22,7 @@ def maze(layout_path: str) -> tuple[BuildPart, BuildPart, BuildPart]:
 
             with BuildSketch(Plane.XY) as _holes:
                 for y, z in layout["holes"]:
-                    y = y * M - WIDTH / 2 + OUTER_WALL_WIDTH
-                    z = z * M - LENGTH / 2 + OUTER_WALL_WIDTH
-                    with Locations((y, z)):
+                    with Locations((y * M, z * M)):
                         Circle(HOLE_DIAMETER / 2)
             extrude(until=Until.FIRST, mode=Mode.SUBTRACT)
 
@@ -41,18 +39,12 @@ def maze(layout_path: str) -> tuple[BuildPart, BuildPart, BuildPart]:
         with BuildPart() as walls:
             with BuildSketch(Plane.XY) as _walls:
                 for a, b, y in layout["walls_v"]:
-                    a = a * M - LENGTH / 2 + OUTER_WALL_WIDTH
-                    b = b * M - LENGTH / 2 + OUTER_WALL_WIDTH
-                    y = y * M - WIDTH / 2 + OUTER_WALL_WIDTH
                     with BuildLine() as ln:
-                        Line((y, a), (y, b))
+                        Line((y * M, a * M), (y * M, b * M))
                     trace(ln.line, line_width=WALL_WIDTH)
                 for a, b, y in layout["walls_h"]:
-                    a = a * M - WIDTH / 2 + OUTER_WALL_WIDTH
-                    b = b * M - WIDTH / 2 + OUTER_WALL_WIDTH
-                    y = y * M - LENGTH / 2 + OUTER_WALL_WIDTH
                     with BuildLine() as ln:
-                        Line((a, y), (b, y))
+                        Line((a * M, y * M), (b * M, y * M))
                     trace(ln.line, line_width=WALL_WIDTH)
             extrude(amount=WALL_HEIGHT)
             top_edges = walls.edges().filter_by(Plane.XY).group_by(Axis.Z)[-1]

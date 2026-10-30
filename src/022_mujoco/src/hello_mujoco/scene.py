@@ -46,7 +46,7 @@ def scene() -> mujoco.MjSpec:
         range=[-10, 10],
     )
 
-    ball = spec.worldbody.add_body(name="ball", pos=[0.1, -0.08, 0.07])
+    ball = spec.worldbody.add_body(name="ball", pos=[0.01, 0.100, 0.01])
     ball.add_geom(type=mujoco.mjtGeom.mjGEOM_SPHERE, size=[0.007], mass=0.005)
     ball.add_freejoint()
 

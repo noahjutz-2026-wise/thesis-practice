@@ -1,2 +1,7 @@
+from ray.rllib.algorithms.ppo import PPOConfig
+
+
 def main():
-    pass
+    base_config = PPOConfig()
+
+    config = base_config.environment()

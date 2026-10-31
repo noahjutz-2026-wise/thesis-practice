@@ -71,7 +71,7 @@ class LabyrinthEnv(MujocoEnv):
 
         # terminated
         is_offpath = dist > 0.02
-        is_jumped = bp[-1] > 0.02
+        is_jumped = bp[-1] > 0.05
         terminated = is_offpath or is_jumped
 
         truncated = False  # TODO

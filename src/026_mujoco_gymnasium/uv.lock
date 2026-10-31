@@ -645,7 +645,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "brax", specifier = ">=0.14.2" },
-    { name = "gymnasium", specifier = ">=1.4.0" },
+    { name = "gymnasium", specifier = ">=1.2.2" },
     { name = "imageio", specifier = ">=2.38.1" },
     { name = "jax", extras = ["cuda13"], specifier = ">=0.12.0.1" },
     { name = "mujoco", specifier = ">=3.17.0" },

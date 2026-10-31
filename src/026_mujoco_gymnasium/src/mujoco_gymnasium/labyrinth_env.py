@@ -41,7 +41,7 @@ class LabyrinthEnv(MujocoEnv):
             camera_name,
             default_camera_config,
             max_geom,
-            visual_options,
+            {} if visual_options is None else visual_options,
         )
 
         self.ix = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, "motor_x")

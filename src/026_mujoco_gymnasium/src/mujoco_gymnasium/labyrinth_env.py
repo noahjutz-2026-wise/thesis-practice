@@ -44,6 +44,13 @@ class LabyrinthEnv(MujocoEnv):
             {} if visual_options is None else visual_options,
         )
 
+        # tmp
+        j = self.model.joint("joint_x")
+        j.range[:] = [0, 0]
+        j = self.model.joint("joint_y")
+        j.range[:] = [0, 0]
+        # --
+
         self.ix = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, "motor_x")
         self.iy = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, "motor_y")
         with open(WAYPOINTS_PATH, "r") as f:
@@ -51,13 +58,21 @@ class LabyrinthEnv(MujocoEnv):
             self.waypoints = np.asarray(waypoints)
             self.waypoints_tree = KDTree(self.waypoints)
         self.progress = 0
+        self.idx = 0
 
     def step(
         self, action: NDArray[np.float32]
     ) -> tuple[NDArray[np.float64], np.float64, bool, bool, dict[str, np.float64]]:
+        self.idx += 1
+        self.idx %= len(self.waypoints)
+        target_pos = self.waypoints[self.idx]
+        target_pos = np.append(target_pos, 0.0)
+        target_pos += self.np_random.uniform(-0.015, 0.015, size=3)
+        self.data.joint("joint_ball_free").qpos[:3] = target_pos
+
         ctrl = np.zeros(self.model.nu)
-        ctrl[self.ix] = action[0]
-        ctrl[self.iy] = action[1]
+        ctrl[self.ix] = 0  # action[0]
+        ctrl[self.iy] = 0  # action[1]
         self.do_simulation(ctrl, self.frame_skip)
 
         obs = self._get_obs()
@@ -68,10 +83,12 @@ class LabyrinthEnv(MujocoEnv):
         delta = i - self.progress
         self.progress = i
         reward = np.float64(delta)
+        reward = np.float64(i)
 
         # terminated
         is_offpath = dist > 0.015
         terminated = is_offpath
+        terminated = False
 
         truncated = False  # TODO
         info = {}  # TODO

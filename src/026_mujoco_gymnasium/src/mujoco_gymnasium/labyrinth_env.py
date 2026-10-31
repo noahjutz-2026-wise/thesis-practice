@@ -50,6 +50,7 @@ class LabyrinthEnv(MujocoEnv):
             waypoints = json.load(f)["waypoints"]
             self.waypoints = np.asarray(waypoints)
             self.waypoints_tree = KDTree(self.waypoints)
+        self.progress = 0
 
     def step(
         self, action: NDArray[np.float32]
@@ -68,12 +69,14 @@ class LabyrinthEnv(MujocoEnv):
         # reward
 
         dist, i = self.waypoints_tree.query(bp[:-1])
-        closest = self.waypoints[i]
+        delta = i - self.progress
+        self.progress = i
+        reward = np.float64(delta)
 
-        print(i)
+        # terminated
+        is_offpath = dist > 0.015
+        terminated = is_offpath
 
-        reward = np.float64(0)  # TODO
-        terminated = bp[-1] < -0.05
         truncated = False  # TODO
         info = {}  # TODO
         return obs, reward, terminated, truncated, info

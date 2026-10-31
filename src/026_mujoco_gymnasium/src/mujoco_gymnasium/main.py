@@ -16,7 +16,7 @@ def main():
     for i in itertools.count():
         action = env.action_space.sample()
         obs, reward, terminated, truncated, info = env.step(action)
-        # print(obs)
+        # print(reward)
 
         if i % 1 == 0:
             frame = env.render()  # RGB, shape (H, W, 3)

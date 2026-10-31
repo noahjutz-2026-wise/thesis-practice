@@ -61,17 +61,18 @@ class LabyrinthEnv(MujocoEnv):
         self.do_simulation(ctrl, self.frame_skip)
 
         obs = self._get_obs()
-        bp = obs[-2:]
+        bp = self.data.sensor("sensor_ball_pos_wrt_board").data
 
         # reward
-        dist, i = self.waypoints_tree.query(bp)
+        dist, i = self.waypoints_tree.query(bp[:-1])
         delta = i - self.progress
         self.progress = i
         reward = np.float64(delta)
 
         # terminated
-        is_offpath = dist > 0.015
-        terminated = is_offpath
+        is_offpath = dist > 0.02
+        is_jumped = bp[-1] > 0.02
+        terminated = is_offpath or is_jumped
 
         truncated = False  # TODO
         info = {}  # TODO
@@ -88,6 +89,6 @@ class LabyrinthEnv(MujocoEnv):
     def _get_obs(self):
         rx = self.data.sensor("sensor_board_rot_x").data
         ry = self.data.sensor("sensor_board_rot_y").data
-        bp = self.data.sensor("sensor_ball_pos_wrt_world").data
+        bp = self.data.sensor("sensor_ball_pos_wrt_board").data
         obs = np.concatenate([rx, ry, bp[:-1]])
         return obs

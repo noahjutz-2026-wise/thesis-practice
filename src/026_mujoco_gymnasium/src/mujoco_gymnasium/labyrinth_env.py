@@ -77,6 +77,8 @@ class LabyrinthEnv(MujocoEnv):
 
         truncated = False  # TODO
         info = {}  # TODO
+        if self.render_mode == "human":
+            self.render()
         return obs, reward, terminated, truncated, info
 
     def reset_model(self) -> NDArray[np.float64]:

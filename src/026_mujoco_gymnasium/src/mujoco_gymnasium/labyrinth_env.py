@@ -55,9 +55,28 @@ class LabyrinthEnv(MujocoEnv):
     def step(
         self, action: NDArray[np.float32]
     ) -> tuple[NDArray[np.float64], np.float64, bool, bool, dict[str, np.float64]]:
+        wrt_board = self.data.sensor("sensor_ball_pos_wrt_board").data.copy()
+        wrt_world = self.data.sensor("sensor_ball_pos_wrt_world").data.copy()
+        viewer = self.mujoco_renderer._get_viewer(self.render_mode)
+        viewer._markers = [
+            {
+                "type": mujoco.mjtGeom.mjGEOM_SPHERE,
+                "size": np.array([0.01, 0.01, 0.01]),
+                "pos": wrt_board,
+                "mat": np.eye(3).flatten(),
+                "rgba": np.array([1.0, 0.0, 0.0, 1.0]),
+            },
+            {
+                "type": mujoco.mjtGeom.mjGEOM_SPHERE,
+                "size": np.array([0.01, 0.01, 0.01]),
+                "pos": wrt_world,
+                "mat": np.eye(3).flatten(),
+                "rgba": np.array([0.0, 1.0, 0.0, 1.0]),
+            },
+        ]
         ctrl = np.zeros(self.model.nu)
-        ctrl[self.ix] = action[0]
-        ctrl[self.iy] = action[1]
+        # ctrl[self.ix] = action[0]
+        ctrl[self.iy] = -0.1  # action[1]
         self.do_simulation(ctrl, self.frame_skip)
 
         obs = self._get_obs()
@@ -68,10 +87,11 @@ class LabyrinthEnv(MujocoEnv):
         delta = i - self.progress
         self.progress = i
         reward = np.float64(delta)
+        print(i)
 
         # terminated
         is_offpath = dist > 0.015
-        terminated = is_offpath
+        terminated = False
 
         truncated = False  # TODO
         info = {}  # TODO
@@ -88,6 +108,6 @@ class LabyrinthEnv(MujocoEnv):
     def _get_obs(self):
         rx = self.data.sensor("sensor_board_rot_x").data
         ry = self.data.sensor("sensor_board_rot_y").data
-        bp = self.data.sensor("sensor_ball_pos").data
+        bp = self.data.sensor("sensor_ball_pos_wrt_world").data
         obs = np.concatenate([rx, ry, bp[:-1]])
         return obs

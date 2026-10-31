@@ -16,12 +16,12 @@ def main():
     for i in itertools.count():
         action = env.action_space.sample()
         obs, reward, terminated, truncated, info = env.step(action)
-        print(reward)
+        # print(reward)
 
         if i % 1 == 0:
             frame = env.render()  # RGB, shape (H, W, 3)
             cv2.imshow("sim", cv2.cvtColor(frame, cv2.COLOR_RGB2BGR))
-            if cv2.waitKey(100) & 0xFF == ord("q"):
+            if cv2.waitKey(10) & 0xFF == ord("q"):
                 break
 
         if terminated or truncated:

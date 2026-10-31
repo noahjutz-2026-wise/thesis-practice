@@ -49,7 +49,7 @@ def scene() -> mujoco.MjSpec:
 
     ball = spec.worldbody.add_body(name="ball", pos=[0.01, 0.100, 0.01])
     ball.add_geom(type=mujoco.mjtGeom.mjGEOM_SPHERE, size=[0.007], mass=0.005)
-    ball.add_freejoint()
+    ball.add_freejoint(name="joint_ball_free")
 
     spec.add_sensor(
         type=mujoco.mjtSensor.mjSENS_JOINTPOS,
@@ -74,9 +74,18 @@ def scene() -> mujoco.MjSpec:
 
     spec.add_sensor(
         type=mujoco.mjtSensor.mjSENS_FRAMEPOS,
-        name="sensor_ball_pos",
-        objtype=mujoco.mjtObj.mjOBJ_BODY,
+        name="sensor_ball_pos_wrt_world",
+        objtype=mujoco.mjtObj.mjOBJ_XBODY,
         objname="ball",
+    )
+
+    spec.add_sensor(
+        type=mujoco.mjtSensor.mjSENS_FRAMEPOS,
+        name="sensor_ball_pos_wrt_board",
+        objtype=mujoco.mjtObj.mjOBJ_XBODY,
+        objname="ball",
+        reftype=mujoco.mjtObj.mjOBJ_XBODY,
+        refname="board",
     )
 
     spec.add_actuator(

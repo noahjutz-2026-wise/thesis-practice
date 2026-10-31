@@ -1,5 +1,4 @@
 import json
-import math
 from pathlib import Path
 
 import mujoco
@@ -67,7 +66,6 @@ class LabyrinthEnv(MujocoEnv):
         obs = np.concatenate([rx, ry, bp[:-1]])
 
         # reward
-
         dist, i = self.waypoints_tree.query(bp[:-1])
         delta = i - self.progress
         self.progress = i

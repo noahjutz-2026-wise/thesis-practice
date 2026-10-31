@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import gymnasium
 import mujoco
 import numpy as np
 from gymnasium.envs.mujoco.mujoco_env import DEFAULT_SIZE, MujocoEnv
@@ -19,7 +20,6 @@ class LabyrinthEnv(MujocoEnv):
         self,
         model_path: str,
         frame_skip: int,
-        observation_space: Space | None = None,
         render_mode: str | None = None,
         width: int = DEFAULT_SIZE,
         height: int = DEFAULT_SIZE,
@@ -29,6 +29,7 @@ class LabyrinthEnv(MujocoEnv):
         max_geom: int = 1000,
         visual_options: dict[int, bool] | None = None,
     ):
+        observation_space = gymnasium.spaces.Box(-1, 1, shape=(4,))
         super().__init__(
             model_path,
             frame_skip,

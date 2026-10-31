@@ -88,6 +88,6 @@ class LabyrinthEnv(MujocoEnv):
     def _get_obs(self):
         rx = self.data.sensor("sensor_board_rot_x").data
         ry = self.data.sensor("sensor_board_rot_y").data
-        bp = self.data.sensor("sensor_ball_pos").data
+        bp = self.data.sensor("sensor_ball_pos_wrt_world").data
         obs = np.concatenate([rx, ry, bp[:-1]])
         return obs

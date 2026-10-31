@@ -12,6 +12,7 @@ def scene() -> mujoco.MjSpec:
     spec.worldbody.add_light(
         pos=[0, 0, 5], type=mujoco.mjtLightType.mjLIGHT_DIRECTIONAL
     )
+    spec.option.timestep = 0.002
 
     spec.worldbody.add_geom(
         type=mujoco.mjtGeom.mjGEOM_PLANE,

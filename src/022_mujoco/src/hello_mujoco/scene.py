@@ -88,6 +88,13 @@ def scene() -> mujoco.MjSpec:
         refname="board",
     )
 
+    spec.add_sensor(
+        type=mujoco.mjtSensor.mjSENS_FRAMELINVEL,
+        name="sensor_ball_vel_wrt_world",
+        objtype=mujoco.mjtObj.mjOBJ_XBODY,
+        objname="ball",
+    )
+
     spec.add_actuator(
         type=mujoco.mjtActuator.mjACTUATOR_VELOCITY,
         trntype=mujoco.mjtTrn.mjTRN_JOINT,

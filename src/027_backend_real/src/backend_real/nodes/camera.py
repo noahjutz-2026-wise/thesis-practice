@@ -3,13 +3,11 @@ import pickle
 from collections.abc import Callable
 
 import cv2 as cv
-import numpy as np
 import zmq
 
 from backend_real.broker import IN
-
-CAM_TOPIC_KEY = b"cam"
-DEV_CAM = "/dev/v4l/by-id/usb-e-con_systems_See3CAM_24CUG_2509460D-video-index0"
+from backend_real.network.devices import DEVICE_CAMERA
+from backend_real.network.topics import TOPIC_KEY_CAMERA
 
 
 def device(path: str) -> cv.VideoCapture:
@@ -33,11 +31,11 @@ def camera(get_device: Callable[[], cv.VideoCapture]):
             device.release()
             device = get_device()
             continue
-        pub.send_multipart([CAM_TOPIC_KEY, pickle.dumps([t, frame])])
+        pub.send_multipart([TOPIC_KEY_CAMERA, pickle.dumps([t, frame])])
 
 
 def main():
-    camera(lambda: device(DEV_CAM))
+    camera(lambda: device(DEVICE_CAMERA))
 
 
 if __name__ == "__main__":

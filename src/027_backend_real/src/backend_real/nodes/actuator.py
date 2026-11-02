@@ -6,10 +6,9 @@ import zmq
 from dynamixel_sdk import PacketHandler, PortHandler
 
 from backend_real.broker import OUT
-from backend_real.estimator import ESTIMATOR_TOPIC_KEY
+from backend_real.network.devices import DEVICE_MOTOR
+from backend_real.network.topics import TOPIC_KEY_ACTUATOR, TOPIC_KEY_VISION
 
-ACTUATOR_TOPIC_KEY = b"actuator"
-DEV_MOTOR = "/dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FTA2U4MF-if00-port0"
 FREQUENCY = 50
 
 ID_X = 1
@@ -20,7 +19,7 @@ os.timerfd_settime(fd, initial=1 / FREQUENCY, interval=1 / FREQUENCY)
 
 
 def main():
-    port = PortHandler(DEV_MOTOR)
+    port = PortHandler(DEVICE_MOTOR)
     packet = PacketHandler(2.0)
     port.openPort()
     port.setBaudRate(1_000_000)
@@ -29,11 +28,11 @@ def main():
         packet.write1ByteTxRx(port, dxl_id, 64, 1)
 
     sub_act = zmq.Context.instance().socket(zmq.SUB)
-    sub_act.setsockopt(zmq.SUBSCRIBE, ACTUATOR_TOPIC_KEY)
+    sub_act.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_VISION)
     sub_act.connect(OUT)
 
     sub_est = zmq.Context.instance().socket(zmq.SUB)
-    sub_est.setsockopt(zmq.SUBSCRIBE, ESTIMATOR_TOPIC_KEY)
+    sub_est.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_ACTUATOR)
     sub_est.connect(OUT)
 
     try:

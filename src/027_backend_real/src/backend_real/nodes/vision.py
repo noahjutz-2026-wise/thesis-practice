@@ -1,9 +1,9 @@
 import pickle
-from pathlib import Path
 
 import zmq
 
 from backend_real.broker import IN, OUT
+from backend_real.cv.tracking import estimate_fn, open_markers
 from backend_real.network.topics import TOPIC_KEY_CAMERA, TOPIC_KEY_VISION
 
 
@@ -14,11 +14,14 @@ def main():
         sub.connect(OUT)
         pub.connect(IN)
 
+        current_estimate = open_markers()
+        est = estimate_fn()
+
         while True:
             _topic, payload = sub.recv_multipart()
             t, img = pickle.loads(payload)
-            # TODO run opencv estimator
-            pub.send_multipart([TOPIC_KEY_VISION, pickle.dumps({})])
+            yaw, roll, pitch = est(img, current_estimate)
+            pub.send_multipart([TOPIC_KEY_VISION, pickle.dumps({yaw, roll, pitch})])
 
 
 if __name__ == "__main__":

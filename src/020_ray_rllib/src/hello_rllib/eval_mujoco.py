@@ -36,15 +36,15 @@ def main():
                 episodes=[episode],
                 rl_module=rl_module,
                 batch={},
-                explore=True,
+                explore=False,
                 shared_data=shared_data,
             )
-            fwd_out = rl_module.forward_exploration(batch)
+            fwd_out = rl_module.forward_inference(batch)
             to_env = module_to_env(
                 rl_module=rl_module,
                 batch=fwd_out,
                 episodes=[episode],
-                explore=True,
+                explore=False,
                 shared_data=shared_data,
             )
             action_batch = to_env.pop(Columns.ACTIONS)

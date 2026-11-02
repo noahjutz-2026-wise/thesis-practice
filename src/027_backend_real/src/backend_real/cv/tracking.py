@@ -1,6 +1,5 @@
 import functools
 from collections.abc import Callable, Sequence
-from pathlib import Path
 
 import cv2
 import numpy as np
@@ -8,9 +7,9 @@ from cv2.typing import MatLike
 from numpy.typing import NDArray
 from scipy.spatial.transform import Rotation
 
-DEV_CAM = "/dev/v4l/by-id/usb-e-con_systems_See3CAM_24CUG_2509460D-video-index0"
-IMAGE_DIR = Path.home()
-CONFIG_DIR = Path.cwd()
+from backend_real.network.devices import DEVICE_CAMERA
+from backend_real.network.files import FILE_CAM_CONFIG_YAML, FILE_MARKERS_CSV
+
 HSV_BOUNDS = ((95, 177, 86), (112, 255, 162))
 HSV_BOUNDS = ((49, 128, 108), (136, 255, 255))
 
@@ -111,7 +110,7 @@ def relative_pose(rvec1, rvec2):
 
 
 def open_calibration():
-    calib = cv2.FileStorage(CONFIG_DIR / "calibration.yaml", cv2.FILE_STORAGE_READ)
+    calib = cv2.FileStorage(FILE_CAM_CONFIG_YAML, cv2.FILE_STORAGE_READ)
     K = calib.getNode("camera_matrix").mat()
     D = calib.getNode("distortion_coefficients").mat()
     w = calib.getNode("image_width").real()
@@ -123,8 +122,7 @@ def open_calibration():
 
 
 def open_markers():
-    markers_f = CONFIG_DIR.glob("*.csv").__next__()
-    with open(markers_f, "r") as f:
+    with open(FILE_MARKERS_CSV, "r") as f:
         data = f.read()
         markers = np.fromstring(data.replace(",", " "), sep=" ").reshape(-1, 2)
 
@@ -164,7 +162,7 @@ def main():
         (1280, 720),
         cv2.CV_32FC1,
     )
-    cap = cv2.VideoCapture(DEV_CAM, cv2.CAP_V4L2)
+    cap = cv2.VideoCapture(DEVICE_CAMERA, cv2.CAP_V4L2)
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)

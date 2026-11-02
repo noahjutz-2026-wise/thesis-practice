@@ -79,16 +79,6 @@ class LabyrinthEnv(MujocoEnv):
         delta = i - self.progress
         self.progress = i
         reward = np.float64(delta)
-        viewer = self.mujoco_renderer._get_viewer(self.render_mode)
-        viewer._markers = [
-            {
-                "type": mujoco.mjtGeom.mjGEOM_SPHERE,
-                "size": np.array([0.01, 0.01, 0.01]),
-                "pos": np.append(self.waypoints[i], 0.1),
-                "mat": np.eye(3).flatten(),
-                "rgba": np.array([1.0, 0.0, 0.0, 1.0]),
-            }
-        ]
 
         # terminated
         is_offpath = dist > 0.05

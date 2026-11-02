@@ -16,6 +16,7 @@ dependencies = [
 [project.scripts]
 hello-rllib = "hello_rllib.main:main"
 train-m = "hello_rllib.train_mujoco:main"
+eval-m = "hello_rllib.eval_mujoco:main"
 
 [build-system]
 requires = ["uv_build>=0.12.24,<0.13.0"]

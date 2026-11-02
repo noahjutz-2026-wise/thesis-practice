@@ -26,6 +26,13 @@ def main():
 
     ppo = config.build_algo()
 
+    try:
+        module = ppo.get_module()
+        assert module is not None
+        module.restore_from_path(CHECKPOINT_PATH)
+    except ValueError:
+        print("unable to restore checkpoint")
+
     nan = float("nan")
     for i in itertools.count():
         r = ppo.train()["env_runners"]

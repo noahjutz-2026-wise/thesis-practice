@@ -81,7 +81,9 @@ class LabyrinthEnv(MujocoEnv):
         dist, i = self.waypoints_tree.query(bp[:-1])
         delta = i - self.progress
         self.progress = i
-        reward = np.float64(delta)
+        reward = delta
+        reward = np.clip(reward, -2, 2)
+        reward = np.float64(reward)
 
         # terminated
         if np.linalg.norm(bp - self.bp) < 1e-6:

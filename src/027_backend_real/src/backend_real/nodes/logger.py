@@ -4,7 +4,8 @@ import numpy as np
 import zmq
 
 from backend_real.broker import OUT
-from backend_real.estimator import ESTIMATOR_TOPIC_KEY
+
+from .vision import VISION_TOPIC_KEY
 
 CONTROL_TOPIC_KEY = b"control"
 
@@ -17,7 +18,7 @@ def main():
     sub_ctrl.connect(OUT)
 
     sub_est = ctx.socket(zmq.SUB)
-    sub_est.setsockopt(zmq.SUBSCRIBE, ESTIMATOR_TOPIC_KEY)
+    sub_est.setsockopt(zmq.SUBSCRIBE, VISION_TOPIC_KEY)
     sub_est.connect(OUT)
 
     poller = zmq.Poller()

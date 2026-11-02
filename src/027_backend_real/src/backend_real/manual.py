@@ -2,8 +2,8 @@ import pickle
 
 import zmq
 
-from backend_real.actuator import ACTUATOR_TOPIC_KEY
 from backend_real.broker import IN
+from backend_real.nodes.actuator import ACTUATOR_TOPIC_KEY
 
 
 def main() -> None:

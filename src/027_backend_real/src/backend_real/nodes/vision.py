@@ -4,9 +4,10 @@ from pathlib import Path
 import zmq
 
 from backend_real.broker import IN, OUT
-from backend_real.camera import CAM_TOPIC_KEY
 
-ESTIMATOR_TOPIC_KEY = b"estimator"
+from .camera import CAM_TOPIC_KEY
+
+VISION_TOPIC_KEY = b"estimator"
 
 
 def main():
@@ -20,7 +21,7 @@ def main():
             _topic, payload = sub.recv_multipart()
             t, img = pickle.loads(payload)
             # TODO run opencv estimator
-            pub.send_multipart([ESTIMATOR_TOPIC_KEY, pickle.dumps({})])
+            pub.send_multipart([VISION_TOPIC_KEY, pickle.dumps({})])
 
 
 if __name__ == "__main__":

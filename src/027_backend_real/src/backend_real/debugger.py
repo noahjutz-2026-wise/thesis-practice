@@ -4,13 +4,13 @@ import cv2 as cv
 import zmq
 
 from backend_real.broker import OUT
-from backend_real.estimator import ESTIMATOR_TOPIC_KEY
+from backend_real.nodes.vision import VISION_TOPIC_KEY
 
 
 def main():
     ctx = zmq.Context.instance()
     sub = ctx.socket(zmq.SUB)
-    sub.setsockopt(zmq.SUBSCRIBE, ESTIMATOR_TOPIC_KEY)
+    sub.setsockopt(zmq.SUBSCRIBE, VISION_TOPIC_KEY)
     sub.connect(OUT)
 
     while True:

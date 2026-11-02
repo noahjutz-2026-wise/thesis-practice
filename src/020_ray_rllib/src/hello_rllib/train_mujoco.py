@@ -6,6 +6,8 @@ from ray.tune.registry import register_env
 
 MUJOCO_XML = Path(__file__).parents[3] / "022_mujoco/export.xml"
 
+CHECKPOINT_PATH = Path(__file__).parents[2] / "ckpt"
+
 
 def main():
     def env(ctx):
@@ -33,3 +35,7 @@ def main():
                 f"[{r.get('episode_return_min', nan):.1f}, {r.get('episode_return_max', nan):.1f}] | "
                 f"len {r.get('episode_len_mean', nan):.1f}"
             )
+        if i % 10 == 0:
+            module = ppo.get_module()
+            assert module is not None
+            module.save_to_path(CHECKPOINT_PATH)

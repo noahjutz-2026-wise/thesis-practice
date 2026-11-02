@@ -3,7 +3,7 @@
 import cv2 as cv
 import numpy as np
 
-from cv_labyrinth.blobs import DEV_CAM
+DEV_CAM = "/dev/v4l/by-id/usb-e-con_systems_See3CAM_24CUG_2509460D-video-index0"
 
 N = 8
 pts = []

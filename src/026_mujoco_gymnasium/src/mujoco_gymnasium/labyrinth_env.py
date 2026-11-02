@@ -95,8 +95,6 @@ class LabyrinthEnv(MujocoEnv):
         is_fallen = bp[-1] < -0.05
         is_cheated = delta > 10
         cond = np.array([is_offpath, is_fallen, is_cheated])
-        if np.any(cond):
-            print(cond)
         terminated = np.any(cond)
 
         truncated = self.t >= 50_000

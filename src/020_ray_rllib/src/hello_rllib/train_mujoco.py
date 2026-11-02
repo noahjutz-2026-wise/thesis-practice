@@ -1,3 +1,4 @@
+import itertools
 from pathlib import Path
 
 from mujoco_gymnasium.labyrinth_env import LabyrinthEnv
@@ -26,7 +27,7 @@ def main():
     ppo = config.build_algo()
 
     nan = float("nan")
-    for i in range(100):
+    for i in itertools.count():
         r = ppo.train()["env_runners"]
         if i % 5 == 0:
             print(

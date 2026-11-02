@@ -28,6 +28,7 @@ class LabyrinthEnv(MujocoEnv):
         default_camera_config: dict[str, float] | None = None,
         max_geom: int = 1000,
         visual_options: dict[int, bool] | None = None,
+        random_starts: bool = True,
     ):
         observation_space = gymnasium.spaces.Box(-1, 1, shape=(6,))
         super().__init__(
@@ -44,6 +45,7 @@ class LabyrinthEnv(MujocoEnv):
             {} if visual_options is None else visual_options,
         )
 
+        self.random_starts = random_starts
         self.ix = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, "motor_x")
         self.iy = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, "motor_y")
         with open(WAYPOINTS_PATH, "r") as f:
@@ -102,6 +104,15 @@ class LabyrinthEnv(MujocoEnv):
     def reset_model(self) -> NDArray[np.float64]:
         qpos = self.init_qpos
         qvel = self.init_qvel
+
+        if self.random_starts:
+            idx = int(self.np_random.integers(len(self.waypoints)))
+            self.progress = idx
+            target_pos = self.waypoints[idx]
+            target_pos += self.np_random.uniform(-0.002, 0.002, size=2)
+            adr = self.model.joint("joint_ball_free").qposadr[0]
+            qpos[adr : adr + 2] = target_pos
+
         self.set_state(qpos, qvel)
         return self._get_obs()
 

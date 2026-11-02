@@ -5,7 +5,6 @@ import gymnasium
 import mujoco
 import numpy as np
 from gymnasium.envs.mujoco.mujoco_env import DEFAULT_SIZE, MujocoEnv
-from gymnasium.spaces import Space
 from numpy.typing import NDArray
 from scipy.spatial import KDTree
 
@@ -64,6 +63,8 @@ class LabyrinthEnv(MujocoEnv):
             self.waypoints_tree = KDTree(self.waypoints)
         self.progress = 0
         self.t = 0
+        self.stall_idx = 0
+        self.bp = np.zeros(())
 
     def step(
         self, action: NDArray[np.float32]
@@ -74,7 +75,7 @@ class LabyrinthEnv(MujocoEnv):
         self.do_simulation(ctrl, self.frame_skip)
 
         obs = self._get_obs()
-        bp = self.data.sensor("sensor_ball_pos_wrt_board").data
+        bp = self.data.sensor("sensor_ball_pos_wrt_board").data.copy()
 
         # reward
         dist, i = self.waypoints_tree.query(bp[:-1])
@@ -83,10 +84,16 @@ class LabyrinthEnv(MujocoEnv):
         reward = np.float64(delta)
 
         # terminated
+        if np.linalg.norm(bp - self.bp) < 1e-6:
+            self.stall_idx += 1
+        else:
+            self.stall_idx = 0
+        self.bp = bp
         is_offpath = dist > 0.05
         is_fallen = bp[-1] < -0.05
         is_cheated = delta > 10
-        cond = np.array([is_offpath, is_fallen, is_cheated])
+        is_stall = self.stall_idx >= 50
+        cond = np.array([is_offpath, is_fallen, is_cheated, is_stall])
         terminated = bool(np.any(cond))
 
         truncated = self.t >= 50_000
@@ -99,6 +106,7 @@ class LabyrinthEnv(MujocoEnv):
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         self.t = 0
         self.progress = 0
+        self.stall_idx = 0
         return super().reset(seed=seed, options=options)
 
     def reset_model(self) -> NDArray[np.float64]:

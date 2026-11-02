@@ -1,3 +1,4 @@
+import functools
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
@@ -20,33 +21,6 @@ INNER_Y = 0.245
 WALL_THICKNESS = 0.0075
 DOT_OUTER_DY = 0.050 + WALL_THICKNESS
 DOT_DIAMETER = 0.008
-
-
-def build_detector():
-    d = 15
-
-    params = cv2.SimpleBlobDetector.Params()
-    params.filterByColor = False
-    area = np.pi * (d / 2) ** 2
-    params.filterByArea = True
-    params.minArea = area * 0.5
-    params.maxArea = area * 1.5
-    params.filterByCircularity = True
-    params.minCircularity = 0.1
-    params.filterByInertia = True
-    params.minInertiaRatio = 0.1
-    params.filterByConvexity = True
-    params.minConvexity = 0.1
-
-    return cv2.SimpleBlobDetector.create(params)
-
-
-def build_rect(dx, dy) -> NDArray:
-    signs = np.array([[-1, 1], [1, 1], [1, -1], [-1, -1]], dtype=float)
-    objp = signs * [dx, dy]
-    objp = np.pad(objp, ((0, 0), (0, 1)))
-    objp = np.ascontiguousarray(objp)
-    return objp
 
 
 def preprocess(img: MatLike) -> MatLike:
@@ -73,19 +47,60 @@ def track(
     return estimate
 
 
-def pose_fn(object_points: NDArray, K: NDArray, D: NDArray):
-    object_points = object_points.reshape(-1, 1, 3)
+def track_fn() -> functools.partial:
+    def build_detector():
+        d = 15
+        params = cv2.SimpleBlobDetector.Params()
+        params.filterByColor = False
+        area = np.pi * (d / 2) ** 2
+        params.filterByArea = True
+        params.minArea = area * 0.5
+        params.maxArea = area * 1.5
+        params.filterByCircularity = True
+        params.minCircularity = 0.1
+        params.filterByInertia = True
+        params.minInertiaRatio = 0.1
+        params.filterByConvexity = True
+        params.minConvexity = 0.1
 
-    def pose(image_points: NDArray) -> None:
-        image_points = image_points.reshape(-1, 1, 2)
+        return cv2.SimpleBlobDetector.create(params)
 
-        ret, rvec, _tvec = cv2.fisheye.solvePnP(
-            object_points, image_points, K, D, flags=cv2.SOLVEPNP_IPPE
-        )
+    blob_detector = build_detector()
+    return functools.partial(track, detect=blob_detector.detect)
 
-        return rvec
 
-    return pose
+def pose(
+    object_points: NDArray, image_points: NDArray, K: NDArray, D: NDArray
+) -> NDArray:
+    image_points = image_points.reshape(-1, 1, 2)
+
+    _ret, rvec, _tvec = cv2.fisheye.solvePnP(
+        object_points, image_points, K, D, flags=cv2.SOLVEPNP_IPPE
+    )
+
+    return rvec
+
+
+def pose_fn() -> tuple[functools.partial, functools.partial]:
+    def build_rect(dx, dy) -> NDArray:
+        signs = np.array([[-1, 1], [1, 1], [1, -1], [-1, -1]], dtype=float)
+        objp = signs * [dx, dy]
+        objp = np.pad(objp, ((0, 0), (0, 1)))
+        objp = np.ascontiguousarray(objp)
+        return objp
+
+    K, D, _w, _h = open_calibration()
+    objp_inner = build_rect(
+        dx=INNER_X / 2 - DOT_DIAMETER, dy=INNER_Y / 2 - DOT_DIAMETER
+    ).reshape(-1, 1, 3)
+    objp_outer = build_rect(
+        dx=OUTER_X / 2 - DOT_DIAMETER, dy=OUTER_Y / 2 - DOT_OUTER_DY - DOT_DIAMETER
+    ).reshape(-1, 1, 3)
+
+    return (
+        functools.partial(pose, object_points=objp_outer, K=K, D=D),
+        functools.partial(pose, object_points=objp_inner, K=K, D=D),
+    )
 
 
 def relative_pose(rvec1, rvec2):
@@ -95,7 +110,7 @@ def relative_pose(rvec1, rvec2):
     return r12
 
 
-def main():
+def open_calibration():
     calib = cv2.FileStorage(CONFIG_DIR / "calibration.yaml", cv2.FILE_STORAGE_READ)
     K = calib.getNode("camera_matrix").mat()
     D = calib.getNode("distortion_coefficients").mat()
@@ -104,18 +119,10 @@ def main():
     h = calib.getNode("image_height").real()
     h = int(h)
     calib.release()
-    newCameraMatrix = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
-        K, D, (w, h), np.eye(3), balance=0.0
-    )
-    map1, map2 = cv2.fisheye.initUndistortRectifyMap(
-        K,
-        D,
-        np.eye(3, dtype=np.float64),
-        newCameraMatrix,
-        (1280, 720),
-        cv2.CV_32FC1,
-    )
+    return K, D, w, h
 
+
+def open_markers():
     markers_f = CONFIG_DIR.glob("*.csv").__next__()
     with open(markers_f, "r") as f:
         data = f.read()
@@ -123,44 +130,62 @@ def main():
 
     scale_factor = np.array([1280 / 640, 720 / 400])
     markers *= scale_factor
-    estimate = markers.copy()
+    return markers
 
-    detector = build_detector()
+
+def estimate(img: cv2.MatLike, estimate: NDArray, pose_inner, pose_outer, track):
+    track(preprocess(img), estimate=estimate)
+    r_inner = pose_inner(estimate[4:])
+    r_outer = pose_outer(estimate[:4])
+    R = relative_pose(r_inner, r_outer)
+    rot = Rotation.from_matrix(R)
+    roll_x, pitch_y, yaw_z = rot.as_euler("xyz", degrees=True)
+    return roll_x, pitch_y, yaw_z
+
+
+def estimate_fn():
+    pose_inner, pose_outer = pose_fn()
+    track = track_fn()
+    return functools.partial(
+        estimate, pose_inner=pose_inner, pose_outer=pose_outer, track=track
+    )
+
+
+def main():
+    K, D, w, h = open_calibration()
+    newCameraMatrix = cv2.fisheye.estimateNewCameraMatrixForUndistortRectify(
+        K, D, (w, h), np.eye(3), balance=0.0
+    )
+    mapx, mapy = cv2.fisheye.initUndistortRectifyMap(
+        K,
+        D,
+        np.eye(3, dtype=np.float64),
+        newCameraMatrix,
+        (1280, 720),
+        cv2.CV_32FC1,
+    )
     cap = cv2.VideoCapture(DEV_CAM, cv2.CAP_V4L2)
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*"MJPG"))
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
-    objp_inner = build_rect(
-        dx=INNER_X / 2 - DOT_DIAMETER, dy=INNER_Y / 2 - DOT_DIAMETER
-    )
-    objp_outer = build_rect(
-        dx=OUTER_X / 2 - DOT_DIAMETER, dy=OUTER_Y / 2 - DOT_OUTER_DY - DOT_DIAMETER
-    )
-
-    pose_inner = pose_fn(objp_inner, K, D)
-    pose_outer = pose_fn(objp_outer, K, D)
+    current_estimate = open_markers()
+    est = estimate_fn()
 
     while True:
         ret, frame = cap.read()
         if not ret:
             print("frame error")
             continue
-        track(preprocess(frame), estimate, detector.detect)
 
-        # PnP
-        r_inner = pose_inner(estimate[4:])
-        r_outer = pose_outer(estimate[:4])
-        R = relative_pose(r_inner, r_outer)
-        rot = Rotation.from_matrix(R)
-        roll_x, pitch_y, yaw_z = rot.as_euler("xyz", degrees=True)
+        roll_x, pitch_y, yaw_z = est(frame, estimate=current_estimate)
 
-        est_undistorted = estimate.copy().reshape(-1, 1, 2)
+        est_undistorted = current_estimate.copy().reshape(-1, 1, 2)
         est_undistorted = cv2.fisheye.undistortPoints(
             est_undistorted, K, D, R=np.eye(3), P=newCameraMatrix
         ).squeeze()
 
-        frame = cv2.remap(frame, map1, map2, interpolation=cv2.INTER_LINEAR)
+        frame = cv2.remap(frame, mapx, mapy, interpolation=cv2.INTER_LINEAR)
         polylines = [
             points.astype(np.int32).reshape(-1, 1, 2)
             for points in (est_undistorted[:4], est_undistorted[4:])
@@ -172,7 +197,7 @@ def main():
         if key == 27:
             print("===")
             print("points estimate")
-            print(estimate)
+            print(current_estimate)
             print("points estimate undistorted")
             print(est_undistorted)
             print("rotation matrix")

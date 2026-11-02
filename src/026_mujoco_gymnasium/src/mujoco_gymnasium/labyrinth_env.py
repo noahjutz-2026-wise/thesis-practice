@@ -133,19 +133,6 @@ class LabyrinthEnv(MujocoEnv):
         nxt = self.waypoints[min(self.progress + 1, len(self.waypoints) - 1)]
         d = nxt - bp[:-1]
         d /= np.linalg.norm(d) + 1e-8
-        viewer = self.mujoco_renderer._get_viewer(self.render_mode)
-        quat, mat = np.zeros(4), np.zeros(9)
-        mujoco.mju_quatZ2Vec(quat, np.array([d[0], d[1], 0.0]))
-        mujoco.mju_quat2Mat(mat, quat)
 
-        viewer._markers = [
-            {
-                "type": mujoco.mjtGeom.mjGEOM_ARROW,
-                "size": np.array([0.002, 0.002, 0.03]),
-                "pos": self.data.body("ball").xpos + [0, 0, 0.02],
-                "mat": mat,  # flat, shape (9,)
-                "rgba": np.array([1.0, 0.0, 0.0, 1.0], dtype=np.float32),
-            }
-        ]
         obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], d[:-1]])
         return obs

@@ -29,7 +29,7 @@ class LabyrinthEnv(MujocoEnv):
         visual_options: dict[int, bool] | None = None,
         random_starts: bool = True,
     ):
-        observation_space = gymnasium.spaces.Box(-1, 1, shape=(6,))
+        observation_space = gymnasium.spaces.Box(-1, 1, shape=(8,))
         super().__init__(
             model_path,
             frame_skip,
@@ -129,5 +129,10 @@ class LabyrinthEnv(MujocoEnv):
         ry = self.data.sensor("sensor_board_rot_y").data
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data
         bv = self.data.sensor("sensor_ball_vel_wrt_world").data
-        obs = np.concatenate([rx, ry, bp[:-1], bv[:-1]])
+
+        nxt = self.waypoints[min(self.progress + 1, len(self.waypoints) - 1)]
+        d = nxt - bp[:-1]
+        d /= np.linalg.norm(d) + 1e-8
+
+        obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], d[:-1]])
         return obs

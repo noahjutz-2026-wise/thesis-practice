@@ -20,7 +20,7 @@ def main():
 
     config = (
         base_config.environment("labyrinth_env")
-        .env_runners(num_env_runners=32, num_envs_per_env_runner=50)
+        .env_runners(num_env_runners=30, num_envs_per_env_runner=8)
         .learners(num_learners=0, num_gpus_per_learner=1)
     )
 
@@ -30,7 +30,7 @@ def main():
         module = ppo.get_module()
         assert module is not None
         module.restore_from_path(CHECKPOINT_PATH)
-    except ValueError:
+    except (ValueError, FileNotFoundError):
         print("unable to restore checkpoint")
 
     nan = float("nan")

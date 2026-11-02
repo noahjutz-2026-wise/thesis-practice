@@ -61,6 +61,7 @@ class LabyrinthEnv(MujocoEnv):
             ).T
             self.waypoints_tree = KDTree(self.waypoints)
         self.progress = 0
+        self.t = 0
 
     def step(
         self, action: NDArray[np.float32]
@@ -98,10 +99,11 @@ class LabyrinthEnv(MujocoEnv):
             print(cond)
         terminated = np.any(cond)
 
-        truncated = False  # TODO
+        truncated = self.t >= 50_000
         info = {}  # TODO
         if self.render_mode == "human":
             self.render()
+        self.t += 1
         return obs, reward, terminated, truncated, info
 
     def reset_model(self) -> NDArray[np.float64]:

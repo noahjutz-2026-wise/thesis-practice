@@ -6,8 +6,11 @@ from ray.rllib.algorithms.ppo import PPOConfig
 from ray.tune.registry import register_env
 
 MUJOCO_XML = Path(__file__).parents[3] / "022_mujoco/export.xml"
-
 CHECKPOINT_PATH = Path(__file__).parents[2] / "ckpt"
+
+N_ENV_RUNNERS = 28
+N_ENVS_PER_RUNNER = 8
+ROLLOUT_FRAGMENT_LENGTH = 128
 
 
 def main():
@@ -20,8 +23,17 @@ def main():
 
     config = (
         base_config.environment("labyrinth_env")
-        .env_runners(num_env_runners=30, num_envs_per_env_runner=8)
+        .env_runners(
+            num_env_runners=N_ENV_RUNNERS,
+            num_envs_per_env_runner=N_ENVS_PER_RUNNER,
+            rollout_fragment_length=ROLLOUT_FRAGMENT_LENGTH,
+        )
         .learners(num_learners=0, num_gpus_per_learner=1)
+        .training(
+            train_batch_size_per_learner=N_ENV_RUNNERS
+            * N_ENVS_PER_RUNNER
+            * ROLLOUT_FRAGMENT_LENGTH
+        )
     )
 
     ppo = config.build_algo()

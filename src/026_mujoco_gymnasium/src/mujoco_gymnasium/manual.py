@@ -45,11 +45,12 @@ def main():
         target = np.clip(target, -0.15, 0.15)
         env.data.qpos[:2] = target
         env.data.qvel[:2] = 0.0
-        env.do_simulation(np.zeros(env.model.nu), env.frame_skip)
-        bp = env.data.sensor("sensor_ball_pos_wrt_board").data
-        dist, i = env.waypoints_tree.query(bp[:-1])
-        env.progress = i
-        if bp[2] < -0.05 or dist > 0.05:
+        obs, reward, terminated, truncated, info = env.step(
+            np.zeros(env.model.nu, dtype=np.float32)
+        )
+        if reward != 0:
+            print(reward)
+        if terminated or truncated:
             env.reset()
             target = np.zeros(2)
         mujoco.mjv_updateScene(

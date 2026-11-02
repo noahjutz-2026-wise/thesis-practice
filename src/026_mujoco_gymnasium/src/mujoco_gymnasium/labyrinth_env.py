@@ -96,6 +96,7 @@ class LabyrinthEnv(MujocoEnv):
 
     def reset(self, *, seed: int | None = None, options: dict | None = None):
         self.t = 0
+        self.progress = 0
         return super().reset(seed=seed, options=options)
 
     def reset_model(self) -> NDArray[np.float64]:

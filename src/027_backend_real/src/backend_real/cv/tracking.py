@@ -133,7 +133,7 @@ def open_markers():
     return markers
 
 
-def estimate(img: cv2.MatLike, estimate: NDArray, pose_inner, pose_outer, track):
+def estimate(img: MatLike, estimate: NDArray, pose_inner, pose_outer, track):
     track(preprocess(img), estimate=estimate)
     r_inner = pose_inner(estimate[4:])
     r_outer = pose_outer(estimate[:4])
@@ -200,8 +200,6 @@ def main():
             print(current_estimate)
             print("points estimate undistorted")
             print(est_undistorted)
-            print("rotation matrix")
-            print(R)
             print("roll x deg")
             print(roll_x)
             print("pitch y deg")

@@ -49,6 +49,16 @@ class LabyrinthEnv(MujocoEnv):
         with open(WAYPOINTS_PATH, "r") as f:
             waypoints = json.load(f)["waypoints"]
             self.waypoints = np.asarray(waypoints)
+            self.waypoints = np.array(
+                [
+                    np.interp(
+                        np.linspace(0, 1, 300),
+                        np.linspace(0, 1, len(waypoints)),
+                        np.asarray(waypoints)[:, k],
+                    )
+                    for k in range(2)
+                ]
+            ).T
             self.waypoints_tree = KDTree(self.waypoints)
         self.progress = 0
 
@@ -68,11 +78,25 @@ class LabyrinthEnv(MujocoEnv):
         delta = i - self.progress
         self.progress = i
         reward = np.float64(delta)
+        viewer = self.mujoco_renderer._get_viewer(self.render_mode)
+        viewer._markers = [
+            {
+                "type": mujoco.mjtGeom.mjGEOM_SPHERE,
+                "size": np.array([0.01, 0.01, 0.01]),
+                "pos": np.append(self.waypoints[i], 0.1),
+                "mat": np.eye(3).flatten(),
+                "rgba": np.array([1.0, 0.0, 0.0, 1.0]),
+            }
+        ]
 
         # terminated
-        is_offpath = dist > 0.02
-        is_jumped = bp[-1] > 0.05
-        terminated = is_offpath or is_jumped
+        is_offpath = dist > 0.05
+        is_fallen = bp[-1] < -0.05
+        is_cheated = delta > 10
+        cond = np.array([is_offpath, is_fallen, is_cheated])
+        if np.any(cond):
+            print(cond)
+        terminated = np.any(cond)
 
         truncated = False  # TODO
         info = {}  # TODO

@@ -5,9 +5,9 @@ import time
 import zmq
 from dynamixel_sdk import PacketHandler, PortHandler
 
-from backend_real.broker import OUT
 from backend_real.network.devices import DEVICE_MOTOR
 from backend_real.network.topics import TOPIC_KEY_ACTUATOR, TOPIC_KEY_VISION
+from backend_real.nodes.broker import OUT
 
 FREQUENCY = 50
 

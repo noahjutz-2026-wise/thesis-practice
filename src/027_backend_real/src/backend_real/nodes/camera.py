@@ -5,9 +5,9 @@ from collections.abc import Callable
 import cv2 as cv
 import zmq
 
-from backend_real.broker import IN
 from backend_real.network.devices import DEVICE_CAMERA
 from backend_real.network.topics import TOPIC_KEY_CAMERA
+from backend_real.nodes.broker import IN
 
 
 def device(path: str) -> cv.VideoCapture:

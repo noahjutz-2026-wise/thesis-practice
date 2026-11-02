@@ -2,9 +2,9 @@ import pickle
 
 import zmq
 
-from backend_real.broker import IN, OUT
 from backend_real.cv.tracking import estimate_fn, open_markers
 from backend_real.network.topics import TOPIC_KEY_CAMERA, TOPIC_KEY_VISION
+from backend_real.nodes.broker import IN, OUT
 
 
 def main():

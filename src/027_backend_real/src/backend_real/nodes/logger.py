@@ -3,8 +3,8 @@ import pickle
 import numpy as np
 import zmq
 
-from backend_real.broker import OUT
 from backend_real.network.topics import TOPIC_KEY_VISION
+from backend_real.nodes.broker import OUT
 
 CONTROL_TOPIC_KEY = b"control"
 

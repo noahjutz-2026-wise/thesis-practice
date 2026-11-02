@@ -135,4 +135,4 @@ class LabyrinthEnv(MujocoEnv):
         d /= np.linalg.norm(d) + 1e-8
 
         obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], d])
-        return obs
+        return obs.astype(np.float32)

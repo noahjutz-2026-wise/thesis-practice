@@ -106,6 +106,10 @@ class LabyrinthEnv(MujocoEnv):
         self.t += 1
         return obs, reward, terminated, truncated, info
 
+    def reset(self, *, seed: int | None = None, options: dict | None = None):
+        self.t = 0
+        return super().reset(seed=seed, options=options)
+
     def reset_model(self) -> NDArray[np.float64]:
         qpos = self.init_qpos
         qvel = self.init_qvel

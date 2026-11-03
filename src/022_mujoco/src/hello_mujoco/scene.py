@@ -2,9 +2,13 @@ from os.path import basename
 from pathlib import Path
 
 import mujoco
+import numpy as np
 from mujoco.rendering.classic.gl_context import os
 
 MESH_PATH = Path("../023_build123d/")
+
+X = 0.290
+Y = 0.245
 
 
 def scene() -> mujoco.MjSpec:
@@ -31,6 +35,13 @@ def scene() -> mujoco.MjSpec:
                 name=name, file=str(base_path / p), scale=[0.001, 0.001, 0.001]
             )
             maze.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=name)
+
+    maze.add_site(
+        name="imu_site",
+        pos=np.array([-X / 2, -Y / 2, -0.002]) + np.array([0.005, 0.005, 0]),
+        quat=[1, 0, 0, 0],
+        size=[0.002, 0.002, 0.002],
+    )
 
     maze.add_joint(
         name="joint_x",

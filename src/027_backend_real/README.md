@@ -7,6 +7,8 @@
 podman-compose up --build
 
 # Interact
-uv run python -m backend_real.client.debugger
+FILE_MARKERS_CSV=markers.csv \
+    FILE_CAM_CONFIG_YAML=calibration.yaml \
+    uv run python -m backend_real.client.debugger
 uv run python -m backend_real.client.manual
 ```

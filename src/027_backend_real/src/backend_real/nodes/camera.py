@@ -1,3 +1,4 @@
+import logging
 import os
 import pickle
 from collections.abc import Callable
@@ -8,6 +9,8 @@ import zmq
 from backend_real.network.devices import get_device_camera
 from backend_real.network.topics import TOPIC_KEY_CAMERA
 from backend_real.nodes.broker import IN
+
+logger = logging.getLogger(__name__)
 
 
 def device(path: str) -> cv.VideoCapture:
@@ -23,13 +26,13 @@ def camera(get_device: Callable[[], cv.VideoCapture]):
     pub = ctx.socket(zmq.PUB)
     pub.connect(IN)
 
-    print(f"[CAM] up: {device.getBackendName()}")
+    logger.info(f"up: {device.getBackendName()}")
 
     while True:
         ret, frame = device.read()
         t = device.get(cv.CAP_PROP_POS_MSEC)
         if not ret:
-            print("frame miss")
+            logger.info("frame miss")
             device.release()
             device = get_device()
             continue
@@ -37,6 +40,7 @@ def camera(get_device: Callable[[], cv.VideoCapture]):
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     camera(lambda: device(get_device_camera()))
 
 

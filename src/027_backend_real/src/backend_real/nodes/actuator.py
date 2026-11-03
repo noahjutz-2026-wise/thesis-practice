@@ -1,3 +1,4 @@
+import logging
 import os
 import pickle
 import time
@@ -19,6 +20,7 @@ os.timerfd_settime(fd, initial=1 / FREQUENCY, interval=1 / FREQUENCY)
 
 
 def main():
+    logging.basicConfig(level=logging.INFO)
     port = PortHandler(get_device_motor())
     packet = PacketHandler(2.0)
     port.openPort()
@@ -35,7 +37,7 @@ def main():
     sub_est.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_ACTUATOR)
     sub_est.connect(OUT)
 
-    print(f"[ACTUATOR] up: {port.is_open}")
+    logging.info(f"[ACTUATOR] up: {port.is_open}")
 
     try:
         while True:

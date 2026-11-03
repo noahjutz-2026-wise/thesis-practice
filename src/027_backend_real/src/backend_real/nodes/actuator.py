@@ -10,6 +10,8 @@ from backend_real.network.devices import get_device_motor
 from backend_real.network.topics import TOPIC_KEY_ACTUATOR, TOPIC_KEY_VISION
 from backend_real.nodes.broker import OUT
 
+logger = logging.getLogger(__name__)
+
 FREQUENCY = 50
 
 ID_X = 1
@@ -37,7 +39,7 @@ def main():
     sub_est.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_VISION)
     sub_est.connect(OUT)
 
-    logging.info(f"[ACTUATOR] up: {port.is_open}")
+    logger.info(f"up: {port.is_open}")
 
     try:
         while True:

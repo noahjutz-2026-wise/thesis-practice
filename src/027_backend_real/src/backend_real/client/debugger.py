@@ -5,7 +5,7 @@ import numpy as np
 import zmq
 
 from backend_real.cv.tracking import open_calibration
-from backend_real.network.topics import TOPIC_KEY_CAMERA, TOPIC_KEY_VISION
+from backend_real.network.topics import TOPIC_KEY_CAMERA, TOPIC_KEY_VISION_TRACK_CORNERS
 
 
 def main():

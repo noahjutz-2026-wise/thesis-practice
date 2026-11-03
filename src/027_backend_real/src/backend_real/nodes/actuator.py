@@ -30,11 +30,11 @@ def main():
         packet.write1ByteTxRx(port, dxl_id, 64, 1)
 
     sub_act = zmq.Context.instance().socket(zmq.SUB)
-    sub_act.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_VISION)
+    sub_act.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_ACTUATOR)
     sub_act.connect(OUT)
 
     sub_est = zmq.Context.instance().socket(zmq.SUB)
-    sub_est.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_ACTUATOR)
+    sub_est.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_VISION)
     sub_est.connect(OUT)
 
     logging.info(f"[ACTUATOR] up: {port.is_open}")

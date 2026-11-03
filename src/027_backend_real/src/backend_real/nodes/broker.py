@@ -10,6 +10,8 @@ def main():
         xsub.bind(IN)
         xpub.bind(OUT)
 
+        print("[BROKER] up")
+
         zmq.proxy(xsub, xpub)
 
 

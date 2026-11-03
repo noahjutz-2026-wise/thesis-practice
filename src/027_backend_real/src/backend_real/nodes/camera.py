@@ -23,6 +23,8 @@ def camera(get_device: Callable[[], cv.VideoCapture]):
     pub = ctx.socket(zmq.PUB)
     pub.connect(IN)
 
+    print(f"[CAM] up: {device.getBackendName()}")
+
     while True:
         ret, frame = device.read()
         t = device.get(cv.CAP_PROP_POS_MSEC)

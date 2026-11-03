@@ -17,6 +17,8 @@ def main():
         current_estimate = open_markers()
         est = estimate_fn()
 
+        print("[VISION] up")
+
         while True:
             _topic, payload = sub.recv_multipart()
             t, img = pickle.loads(payload)

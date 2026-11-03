@@ -35,6 +35,8 @@ def main():
     sub_est.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_ACTUATOR)
     sub_est.connect(OUT)
 
+    print(f"[ACTUATOR] up: {port.is_open}")
+
     try:
         while True:
             os.read(fd, 8)

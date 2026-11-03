@@ -2,13 +2,12 @@ import pickle
 
 import zmq
 
-from backend_real.broker import IN
 from backend_real.network.topics import TOPIC_KEY_ACTUATOR
 
 
 def main() -> None:
     pub = zmq.Context.instance().socket(zmq.PUB)
-    pub.connect(IN)
+    pub.connect("tcp://127.0.0.1:5555")
     try:
         while True:
             x, y = map(int, input("x y (0-1000): ").split())

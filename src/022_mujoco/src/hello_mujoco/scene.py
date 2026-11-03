@@ -106,6 +106,20 @@ def scene() -> mujoco.MjSpec:
         objname="ball",
     )
 
+    spec.add_sensor(
+        name="sensor_imu_acc",
+        type=mujoco.mjtSensor.mjSENS_ACCELEROMETER,
+        objtype=mujoco.mjtObj.mjOBJ_SITE,
+        objname="imu_site",
+    )
+
+    spec.add_sensor(
+        name="sensor_imu_gyro",
+        type=mujoco.mjtSensor.mjSENS_GYRO,
+        objtype=mujoco.mjtObj.mjOBJ_SITE,
+        objname="imu_site",
+    )
+
     spec.add_actuator(
         type=mujoco.mjtActuator.mjACTUATOR_VELOCITY,
         trntype=mujoco.mjtTrn.mjTRN_JOINT,

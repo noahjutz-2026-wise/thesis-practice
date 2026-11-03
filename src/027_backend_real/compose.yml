@@ -5,16 +5,17 @@ x-zmq: &zmq
 services:
   broker:
     build: .
+    image: backend-real
     command: ["/app/.venv/bin/python", "-m", "backend_real.nodes.broker"]
     <<: *zmq
   camera:
-    build: .
+    image: backend-real
     devices:
       - /dev/v4l/by-id/usb-e-con_systems_See3CAM_24CUG_2509460D-video-index0:/dev/video0
     command: ["/app/.venv/bin/python", "-m", "backend_real.nodes.camera"]
     <<: *zmq
   actuator:
-    build: .
+    image: backend-real
     devices:
       - /dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FTA2U4MF-if00-port0:/dev/ttyUSB0
     group_add:
@@ -22,7 +23,7 @@ services:
     command: ["/app/.venv/bin/python", "-m", "backend_real.nodes.actuator"]
     <<: *zmq
   vision:
-    build: .
+    image: backend-real
     volumes:
       - /home/noah/Documents/repos/thesis-practice/src/025_opencv/markers.csv:/data/markers.csv:ro
       - /home/noah/Documents/repos/thesis-practice/src/025_opencv/calibration.yaml:/data/calibration.yaml:ro

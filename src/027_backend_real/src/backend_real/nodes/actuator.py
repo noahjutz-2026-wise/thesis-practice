@@ -5,7 +5,7 @@ import time
 import zmq
 from dynamixel_sdk import PacketHandler, PortHandler
 
-from backend_real.network.devices import DEVICE_MOTOR
+from backend_real.network.devices import get_device_motor
 from backend_real.network.topics import TOPIC_KEY_ACTUATOR, TOPIC_KEY_VISION
 from backend_real.nodes.broker import OUT
 
@@ -19,7 +19,7 @@ os.timerfd_settime(fd, initial=1 / FREQUENCY, interval=1 / FREQUENCY)
 
 
 def main():
-    port = PortHandler(DEVICE_MOTOR)
+    port = PortHandler(get_device_motor())
     packet = PacketHandler(2.0)
     port.openPort()
     port.setBaudRate(1_000_000)

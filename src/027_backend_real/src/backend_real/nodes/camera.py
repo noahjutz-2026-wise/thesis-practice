@@ -5,7 +5,7 @@ from collections.abc import Callable
 import cv2 as cv
 import zmq
 
-from backend_real.network.devices import DEVICE_CAMERA
+from backend_real.network.devices import get_device_camera
 from backend_real.network.topics import TOPIC_KEY_CAMERA
 from backend_real.nodes.broker import IN
 
@@ -37,7 +37,7 @@ def camera(get_device: Callable[[], cv.VideoCapture]):
 
 
 def main():
-    camera(lambda: device(DEVICE_CAMERA))
+    camera(lambda: device(get_device_camera()))
 
 
 if __name__ == "__main__":

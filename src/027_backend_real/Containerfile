@@ -17,8 +17,8 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 FROM docker.io/library/python:3.15-slim-trixie
 
+ENV VIRTUAL_ENV=/app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
+
+WORKDIR /app
 COPY --from=builder /app/.venv /app/.venv
-
-COPY run.sh .
-
-CMD ["./run.sh"]

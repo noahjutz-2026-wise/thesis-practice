@@ -1,7 +1,7 @@
 import zmq
 
-IN = "ipc:///tmp/bus_in"
-OUT = "ipc:///tmp/bus_out"
+IN = "ipc:///run/zmq/bus_in"
+OUT = "ipc:///run/zmq/bus_out"
 
 
 def main():

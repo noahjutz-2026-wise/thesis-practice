@@ -5,3 +5,4 @@ TOPIC_KEY_VISION_TRACK_CORNERS = (
 )
 TOPIC_KEY_VISION_TRACK_BALL = b"vision/track_ball"  # (1,2) NDArray[np.float64]
 TOPIC_KEY_VISION_POSE = b"vision/pose"  # rotvec: (3,) NDArray[np.float64]
+TOPIC_KEY_MPU = b"mpu"  # (8,) NDArray[np.float64]: (t, ax, ay, az, gx, gy, gz, temp)

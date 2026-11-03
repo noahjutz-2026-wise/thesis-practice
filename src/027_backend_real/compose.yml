@@ -32,6 +32,13 @@ services:
       - /home/noah/Documents/repos/thesis-practice/src/025_opencv/calibration.yaml:/data/calibration.yaml:ro
     command: ["/app/.venv/bin/python", "-m", "backend_real.nodes.vision"]
     <<: *zmq
+  mpu:
+    image: backend-real
+    devices:
+      - usb-FTDI_FT232R_USB_UART_A10N2HR3-if00-port0:/dev/ttyUSB1
+    group_add:
+      - "keep-groups"
+    command: ["/app/.venv/bin/python", "-m", "backend_real.nodes.mpu"]
 
 volumes:
   zmq:

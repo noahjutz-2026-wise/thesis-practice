@@ -9,6 +9,7 @@ source = { editable = "." }
 dependencies = [
     { name = "dynamixel-sdk" },
     { name = "opencv-python" },
+    { name = "pyserial" },
     { name = "pyzmq" },
     { name = "scipy" },
 ]
@@ -17,6 +18,7 @@ dependencies = [
 requires-dist = [
     { name = "dynamixel-sdk", specifier = ">=4.1.0" },
     { name = "opencv-python", specifier = ">=5.0.0.93" },
+    { name = "pyserial", specifier = ">=3.5" },
     { name = "pyzmq", specifier = ">=27.2.0" },
     { name = "scipy", specifier = ">=1.18.1" },
 ]

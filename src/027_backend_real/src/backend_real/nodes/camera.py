@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 def device(path: str) -> cv.VideoCapture:
     real_path = os.path.realpath(path)
     cap = cv.VideoCapture(real_path, cv.CAP_V4L2)
+    if not cap.isOpened():
+        cap.release()
+        raise RuntimeError(f"camera not open: {real_path}")
     cap.set(cv.CAP_PROP_FOURCC, cv.VideoWriter_fourcc(*"MJPG"))
     return cap
 
@@ -28,8 +31,17 @@ def camera(get_device: Callable[[], cv.VideoCapture]):
 
     logger.info(f"up: {device.getBackendName()}")
 
+    misses = 0
     while True:
         ret, frame = device.read()
+        if not ret:
+            misses += 1
+            logger.warning(f"frame miss {misses}")
+            if misses >= 60:
+                raise RuntimeError("60 consecutive misses")
+            continue
+        misses = 0
+
         t = device.get(cv.CAP_PROP_POS_MSEC)
         if not ret:
             logger.info("frame miss")

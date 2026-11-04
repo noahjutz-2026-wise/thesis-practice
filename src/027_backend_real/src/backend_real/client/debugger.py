@@ -5,7 +5,7 @@ import numpy as np
 import zmq
 
 from backend_real.cv.tracking import open_calibration
-from backend_real.network.topics import TOPIC_KEY_CAMERA, TOPIC_KEY_VISION_TRACK_CORNERS
+from backend_real.network.topics import TOPIC_KEY_CAMERA, TOPIC_KEY_MPU
 
 
 def main():
@@ -13,6 +13,10 @@ def main():
     sub = ctx.socket(zmq.SUB)
     sub.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_CAMERA)
     sub.connect("tcp://127.0.0.1:5556")
+
+    sub_mpu = ctx.socket(zmq.SUB)
+    sub_mpu.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_MPU)
+    sub_mpu.connect("tcp://127.0.0.1:5556")
 
     # est_pts = np.zeros(())  # TODO
 
@@ -36,6 +40,9 @@ def main():
         # ).squeeze()
         _topic, payload = sub.recv_multipart()
         t, img = pickle.loads(payload)
+
+        _topic, payload = sub_mpu.recv_multipart()
+        print(pickle.loads(payload))
 
         frame = cv2.remap(img, mapx, mapy, interpolation=cv2.INTER_LINEAR)
 

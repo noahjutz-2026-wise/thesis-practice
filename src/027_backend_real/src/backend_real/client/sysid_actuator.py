@@ -36,7 +36,7 @@ def main() -> None:
 
     fns = (random_signal,)
     scales = [(50, -50), (100, -100), (200, -200)]
-    n = 500
+    n = 800
     try:
         for fn, s in itertools.product(fns, scales):
             sx, sy = s
@@ -53,6 +53,7 @@ def main() -> None:
                 y *= sy
                 print(x, y)
                 send(pub, (x, y))
+            time.sleep(1)
     except KeyboardInterrupt:
         pass
     finally:

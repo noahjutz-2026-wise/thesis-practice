@@ -10,6 +10,7 @@ from backend_real.network import topics
 FREQUENCY = 200
 OUT_DIR = "sysid_data"
 TIMEOUT = 0.2
+TRIM = 300
 
 
 def main() -> None:
@@ -42,14 +43,14 @@ def main() -> None:
                     sensor = pickle.loads(payload)[1:7]
 
         if now - last_act_t >= TIMEOUT:
-            if sensors:
+            if len(sensors) > 2 * TRIM:
                 np.savez(
                     f"{OUT_DIR}/batch_{int(now)}.npz",
-                    sensor=np.array(sensors),
-                    action=np.array(actions),
+                    sensor=np.array(sensors[TRIM:-TRIM]),
+                    action=np.array(actions[TRIM:-TRIM]),
                 )
-                sensors = []
-                actions = []
+            sensors = []
+            actions = []
             continue
         sensors.append(sensor)
         actions.append(act)

@@ -1,5 +1,5 @@
 import itertools
-import math
+import os
 import pickle
 import random
 import time
@@ -11,26 +11,14 @@ from backend_real.network.topics import TOPIC_KEY_ACTUATOR
 FREQUENCY = 50
 
 
-def ramp(t: float) -> tuple[float, float]:
-    return 1 - abs(t % 4 - 2) / 2, 0.5
-
-
-def sine(t: float) -> tuple[float, float]:
-    return math.sin(5 * t), math.sin(10 * t)
-
-
-def square(t: float) -> tuple[float, float]:
-    return 1 if t % 0.8 < 0.4 else -1, 1 if t % 0.4 < 0.2 else -1
-
-
 def random_signal(t: float) -> tuple[float, float]:
     return random.uniform(-1, 1), random.uniform(-1, 1)
 
 
 def reset(t) -> tuple[float, float]:
-    if t < 50:
+    if t < 10:
         return -100, -100
-    if t < 60:
+    if t < 15:
         return 100, 100
     return 0, 0
 
@@ -43,24 +31,31 @@ def main() -> None:
     pub = zmq.Context.instance().socket(zmq.PUB)
     pub.connect("tcp://127.0.0.1:5555")
     time.sleep(1)
+    fd = os.timerfd_create(time.CLOCK_MONOTONIC)
+    os.timerfd_settime(fd, initial=1 / FREQUENCY, interval=1 / FREQUENCY)
 
-    fns = (ramp, sine, square, random_signal)
-    scales = [(1000, 1000), (1000, -1000), (-500, 1000), (250, -250)]
+    fns = (random_signal,)
+    scales = [(50, -50), (100, -100), (200, -200)]
     n = 500
     try:
         for fn, s in itertools.product(fns, scales):
             sx, sy = s
             print(fn.__name__, s)
             for t in range(70):
+                os.read(fd, 8)
                 send(pub, reset(t))
             time.sleep(1)
 
             for t in range(n):
-                x, y = fn(t)
+                os.read(fd, 8)
+                x, y = fn(t * max(sx, sy) // 10)
                 x *= sx
                 y *= sy
+                print(x, y)
                 send(pub, (x, y))
     except KeyboardInterrupt:
+        pass
+    finally:
         send(pub, (0.0, 0.0))
 
 

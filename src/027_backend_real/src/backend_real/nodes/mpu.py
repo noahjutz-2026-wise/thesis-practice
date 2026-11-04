@@ -14,10 +14,11 @@ from backend_real.nodes.broker import IN
 logger = logging.getLogger(__name__)
 
 BAUDRATE = 230_400
+TIMEOUT_S = 0.5
 
 
 def device(path: str) -> tuple[serial.Serial, float]:
-    s = serial.Serial(path, BAUDRATE, timeout=1)
+    s = serial.Serial(path, BAUDRATE, timeout=TIMEOUT_S)
     mcu_us = None
     while mcu_us is None:
         line = s.readline()
@@ -38,7 +39,10 @@ def mpu(get_device: Callable[..., tuple[serial.Serial, float]]):
     logger.info(f"up: {s.port}")
 
     while True:
-        row = np.array(s.readline().split(b","), dtype=np.float64)
+        line = s.readline()
+        if not line:
+            raise RuntimeError(f"mpu: no serial data for {TIMEOUT_S} s")
+        row = np.array(line.split(b","), dtype=np.float64)
         row[0] = (row[0] + offset) / 1e6  # mcu micros -> host monotonic seconds
         pub.send_multipart([TOPIC_KEY_MPU, pickle.dumps(row)])
 

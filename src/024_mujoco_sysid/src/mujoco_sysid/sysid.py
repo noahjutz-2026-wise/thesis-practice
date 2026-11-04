@@ -30,8 +30,8 @@ for axis in ("x", "y"):
         sysid.Parameter(
             f"stiffness_{axis}",
             nominal=100.0,
-            min_value=10.0,
-            max_value=500.0,
+            min_value=0.1,
+            max_value=5000.0,
             modifier=lambda model, p, a=axis: setattr(
                 model.actuator(f"motor_{a}"),
                 "gainprm",

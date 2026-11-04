@@ -1,3 +1,6 @@
+from glob import glob
+from pathlib import Path
+
 import mujoco
 import numpy as np
 from mujoco import sysid
@@ -6,6 +9,13 @@ MODEL_XML = "../022_mujoco/export.xml"
 
 
 spec = mujoco.MjSpec.from_file(MODEL_XML)
+measured_sensor_names = {"sensor_imu_acc", "sensor_imu_gyro"}
+
+for sensor in list(spec.sensors):
+    if sensor.name not in measured_sensor_names:
+        spec.delete(sensor)
+
+
 model = spec.compile()
 data = mujoco.MjData(model)
 
@@ -72,23 +82,52 @@ for axis in ("x", "y"):
 
 initial_state = sysid.create_initial_state(model, data.qpos, data.qvel, data.act)
 
-t = np.arange(0, 10, 0.001)
+DATA_GLOB = "../027_backend_real/sysid_data/*.npz"
+FREQUENCY = 200
 
-control_ts = sysid.TimeSeries.from_control_names(
-    t, np.hstack([np.sin(t[:, None]), np.sin(t[:, None])]), model
-)
-sensor_ts = sysid.TimeSeries.from_names(
-    t, np.hstack([np.sin(t[:, None] - 0.1), np.sin(t[:, None] - 0.1)]), model
-)
+models_sequences = []
 
-ms = sysid.ModelSequences("ms", spec, "measured", initial_state, control_ts, sensor_ts)
 
-residual_fn = sysid.build_residual_fn(models_sequences=[ms])
+def sensor_mapping(model):
+    mapping = {}
+    for name in ("sensor_imu_acc", "sensor_imu_gyro"):
+        sid = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_SENSOR, name)
+        adr, dim = model.sensor_adr[sid], model.sensor_dim[sid]
+        for j in range(dim):
+            mapping[f"{name}[{j}]"] = (
+                sysid.SignalType.MjSensor,
+                np.array([adr + j]),
+            )
+    return mapping
+
+
+for path in sorted(glob(DATA_GLOB)):
+    d = np.load(path)
+    t = np.arange(len(d["sensor"])) / FREQUENCY
+    control_ts = sysid.TimeSeries.from_control_names(t, d["action"], model)
+    sensor_ts = sysid.TimeSeries(
+        times=t, data=d["sensor"], signal_mapping=sensor_mapping(model)
+    )
+    models_sequences.append(
+        sysid.ModelSequences(
+            Path(path).stem,
+            spec,
+            "measured",
+            initial_state,
+            control_ts,
+            sensor_ts,
+            allow_missing_sensors=True,
+        )
+    )
+
+residual_fn = sysid.build_residual_fn(models_sequences=models_sequences)
 opt_params, opt_result = sysid.optimize(initial_params=params, residual_fn=residual_fn)
-sysid.save_results("results/", [ms], params, opt_params, opt_result, residual_fn)
+sysid.save_results(
+    "results/", models_sequences, params, opt_params, opt_result, residual_fn
+)
 
 report = sysid.default_report(
-    models_sequences=[ms],
+    models_sequences=models_sequences,
     initial_params=params,
     opt_params=opt_params,
     residual_fn=residual_fn,

@@ -1,4 +1,5 @@
 import pickle
+import time
 
 import cv2
 import numpy as np
@@ -7,8 +8,15 @@ import zmq
 from backend_real.cv.tracking import open_calibration
 from backend_real.network.topics import TOPIC_KEY_CAMERA, TOPIC_KEY_MPU
 
-
 RCVTIMEO_MS = 500
+
+
+def drain(sub):
+    while True:
+        try:
+            _ = sub.recv_multipart(flags=zmq.NOBLOCK)
+        except zmq.Again:
+            break
 
 
 def main():
@@ -56,6 +64,11 @@ def main():
             print("mpu timeout")
             continue
         print(pickle.loads(payload))
+
+        t0 = time.time()
+        drain(sub)
+        drain(sub_mpu)
+        print(time.time() - t0)
 
         frame = cv2.remap(img, mapx, mapy, interpolation=cv2.INTER_LINEAR)
 

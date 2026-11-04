@@ -39,6 +39,8 @@ services:
     group_add:
       - "keep-groups"
     command: ["/app/.venv/bin/python", "-m", "backend_real.nodes.mpu"]
+    <<: *zmq
+
 
 volumes:
   zmq:

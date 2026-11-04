@@ -12,3 +12,10 @@ FILE_MARKERS_CSV=markers.csv \
     uv run python -m backend_real.client.debugger
 uv run python -m backend_real.client.manual
 ```
+
+# Development
+
+```bash
+uv sync --no-dev --group container # opencv-python
+uv sync # opencv-python-headless
+```

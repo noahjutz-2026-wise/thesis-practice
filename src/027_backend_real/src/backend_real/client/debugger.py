@@ -1,3 +1,4 @@
+import itertools
 import pickle
 import time
 
@@ -46,7 +47,7 @@ def main():
         cv2.CV_32FC1,
     )
 
-    while True:
+    for i in itertools.count():
         # est_pts_undistort = est_pts.copy().reshape(-1, 1, 2)
         # est_pts_undistort = cv2.fisheye.undistortPoints(
         #     est_pts, K, D, R=np.eye(3), P=newCameraMatrix
@@ -63,12 +64,12 @@ def main():
         except zmq.Again:
             print("mpu timeout")
             continue
-        print(pickle.loads(payload))
 
-        t0 = time.time()
+        if i % 10 == 0:
+            print(pickle.loads(payload))
+
         drain(sub)
         drain(sub_mpu)
-        print(time.time() - t0)
 
         frame = cv2.remap(img, mapx, mapy, interpolation=cv2.INTER_LINEAR)
 

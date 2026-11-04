@@ -5,6 +5,7 @@ x-zmq: &zmq
 services:
   broker:
     build: .
+    restart: unless-stopped
     image: backend-real
     command: ["/app/.venv/bin/python", "-m", "backend_real.nodes.broker"]
     <<: *zmq
@@ -13,12 +14,14 @@ services:
       - "127.0.0.1:5556:5556"
   camera:
     image: backend-real
+    restart: unless-stopped
     devices:
       - /dev/v4l/by-id/usb-e-con_systems_See3CAM_24CUG_2509460D-video-index0:/dev/video0
     command: ["/app/.venv/bin/python", "-m", "backend_real.nodes.camera"]
     <<: *zmq
   actuator:
     image: backend-real
+    restart: unless-stopped
     devices:
       - /dev/serial/by-id/usb-FTDI_USB__-__Serial_Converter_FTA2U4MF-if00-port0:/dev/ttyUSB0
     group_add:
@@ -27,6 +30,7 @@ services:
     <<: *zmq
   vision:
     image: backend-real
+    restart: unless-stopped
     volumes:
       - /home/noah/Documents/repos/thesis-practice/src/025_opencv/markers.csv:/data/markers.csv:ro
       - /home/noah/Documents/repos/thesis-practice/src/025_opencv/calibration.yaml:/data/calibration.yaml:ro
@@ -34,8 +38,9 @@ services:
     <<: *zmq
   mpu:
     image: backend-real
+    restart: unless-stopped
     devices:
-      - usb-FTDI_FT232R_USB_UART_A10N2HR3-if00-port0:/dev/ttyUSB1
+      - /dev/serial/by-id/usb-FTDI_FT232R_USB_UART_A10N2HR3-if00-port0:/dev/ttyUSB1
     group_add:
       - "keep-groups"
     command: ["/app/.venv/bin/python", "-m", "backend_real.nodes.mpu"]

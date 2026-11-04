@@ -8,16 +8,9 @@ import zmq
 
 from backend_real.cv.tracking import open_calibration
 from backend_real.network.topics import TOPIC_KEY_CAMERA, TOPIC_KEY_MPU
+from backend_real.util import drain
 
 RCVTIMEO_MS = 500
-
-
-def drain(sub):
-    while True:
-        try:
-            _ = sub.recv_multipart(flags=zmq.NOBLOCK)
-        except zmq.Again:
-            break
 
 
 def main():

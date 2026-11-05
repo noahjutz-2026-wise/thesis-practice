@@ -10,6 +10,13 @@ def main():
 
     print(r)
 
+    print("===")
+
+    with open(RESULTS_DIR / "confidence.pkl", "rb") as f:
+        r = pickle.load(f)
+
+    print(r)
+
 
 if __name__ == "__main__":
     main()

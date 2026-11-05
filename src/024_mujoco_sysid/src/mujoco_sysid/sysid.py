@@ -145,6 +145,12 @@ report = sysid.default_report(
 print(report.build())
 report.save("report.html")
 
+import json
+residuals, _, _ = residual_fn(opt_params.as_vector(), opt_params)
+res = np.concatenate(residuals)
+fit = {"rmse": float(np.sqrt(np.mean(res**2))), "max_abs_residual": float(np.max(np.abs(res))), "n_residuals": int(res.size), "params": {n: float(v) for n, v in zip(opt_params.get_non_frozen_parameter_names(), opt_params.as_vector())}}
+Path("results/fit_report.json").write_text(json.dumps(fit, indent=2))
+
 
 def main():
     pass

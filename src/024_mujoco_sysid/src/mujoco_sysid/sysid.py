@@ -15,8 +15,6 @@ for sensor in list(spec.sensors):
     if sensor.name not in measured_sensor_names:
         spec.delete(sensor)
 
-spec.site("imu_site").quat = (0, 0.7071, 0.7071, 0)
-
 
 model = spec.compile()
 data = mujoco.MjData(model)
@@ -87,8 +85,6 @@ initial_state = sysid.create_initial_state(model, data.qpos, data.qvel, data.act
 DATA_GLOB = "../027_backend_real/sysid_data/*.npz"
 FREQUENCY = 200
 CONTROL_SCALE = 1000
-ACC_SCALE = 10.0 / 8.745
-GYRO_BIAS = np.array([-0.0507, 0.1054, -0.0125])
 
 models_sequences = []
 
@@ -110,8 +106,6 @@ for path in sorted(glob(DATA_GLOB)):
     d = np.load(path)
     t = np.arange(len(d["sensor"])) / FREQUENCY
     meas = d["sensor"].copy()
-    meas[:, :3] *= ACC_SCALE
-    meas[:, 3:6] -= GYRO_BIAS
     control_ts = sysid.TimeSeries.from_control_names(
         t, d["action"] / CONTROL_SCALE, model
     )

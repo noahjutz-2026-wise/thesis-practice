@@ -120,19 +120,13 @@ def scene() -> mujoco.MjSpec:
         objname="imu_site",
     )
 
-    spec.add_actuator(
-        type=mujoco.mjtActuator.mjACTUATOR_VELOCITY,
-        trntype=mujoco.mjtTrn.mjTRN_JOINT,
-        name="motor_x",
-        target="joint_x",
-        ctrlrange=[-1, 1],
-    )
-
-    spec.add_actuator(
-        type=mujoco.mjtActuator.mjACTUATOR_VELOCITY,
-        trntype=mujoco.mjtTrn.mjTRN_JOINT,
-        name="motor_y",
-        target="joint_y",
-        ctrlrange=[-1, 1],
-    )
+    for ax in ("x", "y"):
+        spec.add_actuator(
+            type=mujoco.mjtActuator.mjACTUATOR_VELOCITY,
+            trntype=mujoco.mjtTrn.mjTRN_JOINT,
+            name=f"motor_{ax}",
+            target=f"joint_{ax}",
+            ctrlrange=[-1, 1],
+            gainprm=[0.05] + [0] * 9,
+        )
     return spec

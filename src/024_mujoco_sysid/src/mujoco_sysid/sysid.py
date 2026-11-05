@@ -21,15 +21,13 @@ data = mujoco.MjData(model)
 
 params = sysid.ParameterDict()
 
-# Dynamically add stiffness, damping, armature, and friction params for both X and Y axes
 for axis in ("x", "y"):
-    # 1. Motor Actuator Stiffness (Gain / kp)
     params.add(
         sysid.Parameter(
-            f"stiffness_{axis}",
-            nominal=100.0,
-            min_value=0.1,
-            max_value=5000.0,
+            f"gainrpm_{axis}",
+            nominal=0.05,
+            min_value=0.0001,
+            max_value=1,
             modifier=lambda model, p, a=axis: setattr(
                 model.actuator(f"motor_{a}"),
                 "gainprm",
@@ -37,28 +35,10 @@ for axis in ("x", "y"):
             ),
         )
     )
-
-    # 2. Motor Actuator Damping (Velocity Gain / kv)
-    params.add(
-        sysid.Parameter(
-            f"damping_{axis}",
-            nominal=10.0,
-            min_value=0.1,
-            max_value=50.0,
-            modifier=lambda model, p, a=axis: setattr(
-                model.actuator(f"motor_{a}"),
-                "biasprm",
-                [0.0, -p.value[0], 0.0]
-                + list(model.actuator(f"motor_{a}").biasprm[3:]),
-            ),
-        )
-    )
-
-    # 1. Joint Armature (Scalar float)
     params.add(
         sysid.Parameter(
             f"armature_{axis}",
-            nominal=0.01,
+            nominal=0.005,
             min_value=0.001,
             max_value=0.1,
             modifier=lambda model, p, a=axis: setattr(
@@ -66,14 +46,12 @@ for axis in ("x", "y"):
             ),
         )
     )
-
-    # 2. Joint Friction Loss (Scalar float)
     params.add(
         sysid.Parameter(
             f"friction_{axis}",
-            nominal=0.1,
+            nominal=0.001,
             min_value=0.0,
-            max_value=2.0,
+            max_value=0.5,
             modifier=lambda model, p, a=axis: setattr(
                 model.joint(f"joint_{a}"), "frictionloss", float(p.value[0])
             ),
@@ -83,7 +61,6 @@ for axis in ("x", "y"):
 initial_state = sysid.create_initial_state(model, data.qpos, data.qvel, data.act)
 
 DATA_GLOB = "../027_backend_real/sysid_data/*.npz"
-FREQUENCY = 200
 CONTROL_SCALE = 1000
 
 models_sequences = []
@@ -104,7 +81,7 @@ def sensor_mapping(model):
 
 for path in sorted(glob(DATA_GLOB)):
     d = np.load(path)
-    t = np.arange(len(d["sensor"])) / FREQUENCY
+    t = np.arange(len(d["sensor"])) / 50
     meas = d["sensor"].copy()
     control_ts = sysid.TimeSeries.from_control_names(
         t, d["action"] / CONTROL_SCALE, model

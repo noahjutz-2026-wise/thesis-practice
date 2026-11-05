@@ -39,7 +39,7 @@ def scene() -> mujoco.MjSpec:
     maze.add_site(
         name="imu_site",
         pos=np.array([-X / 2, -Y / 2, -0.002]) + np.array([0.005, 0.005, 0]),
-        quat=[1, 0, 0, 0],
+        quat=[0, 1, 0, 0],
         size=[0.002, 0.002, 0.002],
     )
 

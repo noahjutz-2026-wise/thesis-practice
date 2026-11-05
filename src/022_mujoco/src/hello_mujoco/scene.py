@@ -9,6 +9,7 @@ MESH_PATH = Path("../023_build123d/")
 
 X = 0.290
 Y = 0.245
+Z = 0.022
 
 
 def scene() -> mujoco.MjSpec:
@@ -25,7 +26,19 @@ def scene() -> mujoco.MjSpec:
         pos=[0, 0, -0.15],
     )
 
-    maze = spec.worldbody.add_body(name="board", pos=[0, 0, 0])
+    m = 0.165
+    maze = spec.worldbody.add_body(
+        name="board",
+        pos=[0, 0, 0],
+        mass=m,
+        explicitinertial=True,
+        ipos=[0, 0, 0],
+        inertia=[
+            m * (Y**2 + Z**2) / 12,
+            m * (X**2 + Z**2) / 12,
+            m * (X**2 + Y**2) / 12,
+        ],
+    )
 
     for name in ["floor", "outer", "walls"]:
         base_path = MESH_PATH / f"{name}_parts"

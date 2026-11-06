@@ -72,6 +72,7 @@ class LabyrinthEnv(MujocoEnv):
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data.copy()
 
         # reward
+        penalty = 0.0005
         xy = shapely.geometry.Point(bp[:-1])
         lo, hi = max(0, self.progress - WINDOW), min(1, self.progress + WINDOW)
         sub = substring(self.line, lo, hi, normalized=True)
@@ -80,7 +81,7 @@ class LabyrinthEnv(MujocoEnv):
         dist = sub.distance(xy)
         delta = newp - self.progress
         self.progress = newp
-        reward = delta
+        reward = delta - penalty
         reward = np.float64(reward)
 
         # terminated
@@ -93,6 +94,8 @@ class LabyrinthEnv(MujocoEnv):
         is_fallen = bp[-1] < -0.05
         is_stall = self.stall_idx >= 50
         is_goal = self.progress >= 1.0
+        if is_goal:
+            reward += 1
         cond = np.array([is_offpath, is_fallen, is_stall, is_goal])
         terminated = bool(np.any(cond))
 

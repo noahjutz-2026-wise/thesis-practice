@@ -144,6 +144,6 @@ def scene() -> mujoco.MjSpec:
             name=f"motor_{ax}",
             target=f"joint_{ax}",
             ctrlrange=[-1, 1],
-            gainprm=[0.05] + [0] * 9,
+            gainprm=[0.15] + [0] * 9,
         )
     return spec

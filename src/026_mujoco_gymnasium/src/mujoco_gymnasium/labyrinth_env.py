@@ -95,7 +95,8 @@ class LabyrinthEnv(MujocoEnv):
         is_fallen = bp[-1] < -0.05
         is_cheated = delta > 10
         is_stall = self.stall_idx >= 50
-        cond = np.array([is_offpath, is_fallen, is_cheated, is_stall])
+        is_goal = self.progress == len(self.waypoints) - 1
+        cond = np.array([is_offpath, is_fallen, is_cheated, is_stall, is_goal])
         terminated = bool(np.any(cond))
 
         truncated = self.t >= 50_000

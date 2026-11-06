@@ -3,17 +3,12 @@ name = "real-gymnasium"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }
-]
+authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.13"
-dependencies = [
-    "gymnasium>=1.2.2",
-    "pyzmq>=27.3.0",
-]
+dependencies = ["gymnasium>=1.2.2", "pyzmq>=27.3.0"]
 
 [project.scripts]
-real-gymnasium = "real_gymnasium:main"
+rg = "real_gymnasium.main:main"
 
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14.0"]

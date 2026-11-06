@@ -72,7 +72,7 @@ class LabyrinthEnv(MujocoEnv):
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data.copy()
 
         # reward
-        penalty = 0.0005
+        penalty = 0.0001
         xy = shapely.geometry.Point(bp[:-1])
         lo, hi = max(0, self.progress - WINDOW), min(1, self.progress + WINDOW)
         sub = substring(self.line, lo, hi, normalized=True)

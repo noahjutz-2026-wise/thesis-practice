@@ -49,6 +49,7 @@ def scene() -> mujoco.MjSpec:
         "floor": [0.929, 0.796, 0.624, 1],
         "walls": [0.388, 0.141, 0, 1],
         "outer": [0.929, 0.796, 0.624, 1],
+        "ball": [0.122, 0.58, 1, 1],
     }
 
     for part in ["floor", "outer", "walls"]:
@@ -89,7 +90,9 @@ def scene() -> mujoco.MjSpec:
     )
 
     ball = spec.worldbody.add_body(name="ball", pos=[0.01, 0.100, 0.01])
-    ball.add_geom(type=mujoco.mjtGeom.mjGEOM_SPHERE, size=[0.007], mass=0.005)
+    ball.add_geom(
+        type=mujoco.mjtGeom.mjGEOM_SPHERE, size=[0.007], mass=0.005, rgba=colors["ball"]
+    )
     ball.add_freejoint(name="joint_ball_free")
 
     spec.add_sensor(

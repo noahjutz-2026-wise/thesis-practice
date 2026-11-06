@@ -149,6 +149,8 @@ class LabyrinthEnv(MujocoEnv):
         mujoco.mju_quatZ2Vec(quat, np.array([dir_t[0], dir_t[1], 0.0]))
         mujoco.mju_quat2Mat(mat, quat)
 
+        point = self.line.interpolate(self.progress, normalized=True)
+
         viewer._markers = [
             {
                 "type": mujoco.mjtGeom.mjGEOM_ARROW,
@@ -156,6 +158,12 @@ class LabyrinthEnv(MujocoEnv):
                 "pos": self.data.body("ball").xpos + [0, 0, 0.02],
                 "mat": mat,  # flat, shape (9,)
                 "rgba": np.array([1.0, 0.0, 0.0, 1.0], dtype=np.float32),
-            }
+            },
+            {
+                "type": mujoco.mjtGeom.mjGEOM_SPHERE,
+                "size": np.array([0.005, 0.0, 0.0]),
+                "pos": np.array([point.x, point.y, 0.02]),
+                "rgba": np.array([0.0, 1.0, 0.0, 1.0], dtype=np.float32),
+            },
         ]
         self.render()

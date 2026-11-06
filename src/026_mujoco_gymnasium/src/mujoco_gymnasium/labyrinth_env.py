@@ -145,6 +145,9 @@ class LabyrinthEnv(MujocoEnv):
         if self.t % 10 == 0:
             self.track_renderer.update_scene(self.data, camera="ball_cam")
             self.track_renderer.render(out=self.buf)
+            # grayscale in place: buffer becomes (64, 64, 1), matching the
+            # declared (64, 64, 1) space and is channel-order-free.
+            self.buf[:, :] = self.buf.mean(axis=-1, keepdims=True).astype(np.uint8)
 
         obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], self._dir_to_target(bp)])
         return {"vec": obs.astype(np.float32), "image": self.buf}

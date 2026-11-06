@@ -92,10 +92,12 @@ class LabyrinthEnv(MujocoEnv):
         self.bp = bp
         is_offpath = dist > 0.03
         is_fallen = bp[-1] < -0.05
+        if is_fallen:
+            reward = -0.1
         is_stall = self.stall_idx >= 50
         is_goal = self.progress >= 1.0
         if is_goal:
-            reward += 1
+            reward = 1
         cond = np.array([is_offpath, is_fallen, is_stall, is_goal])
         terminated = bool(np.any(cond))
 

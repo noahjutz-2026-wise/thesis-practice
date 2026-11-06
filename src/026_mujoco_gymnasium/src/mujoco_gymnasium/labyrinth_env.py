@@ -66,10 +66,7 @@ class LabyrinthEnv(MujocoEnv):
         self.t = 0
         self.stall_idx = 0
         self.bp = np.zeros(())
-        cam_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_CAMERA, "ball_cam")
-        self.track_renderer = mujoco.Renderer(
-            self.model, height=64, width=64, camera_id=cam_id
-        )
+        self.track_renderer = mujoco.Renderer(self.model, height=64, width=64)
         self.buf = np.zeros((64, 64, 3), np.uint8)
 
     def step(
@@ -164,6 +161,10 @@ class LabyrinthEnv(MujocoEnv):
         dir_t = self._dir_to_target(bp)
 
         viewer = self.mujoco_renderer._get_viewer(self.render_mode)
+        # The offscreen ball_cam Renderer (used in _get_obs) makes its own GL
+        # context current, which leaves the window viewer's context inactive
+        # and freezes its image. Restore it before every human render.
+        viewer.make_context_current()
         quat, mat = np.zeros(4), np.zeros(9)
         mujoco.mju_quatZ2Vec(quat, np.array([dir_t[0], dir_t[1], 0.0]))
         mujoco.mju_quat2Mat(mat, quat)

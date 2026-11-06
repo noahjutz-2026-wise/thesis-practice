@@ -15,11 +15,12 @@ def main():
     print(env)
     env.reset()
 
+    cum = 0
     for i in itertools.count():
         action = env.action_space.sample()
         obs, reward, terminated, truncated, info = env.step(action)
-        # if reward != 0:
-        #     print(reward)
+        cum += reward
+        print(cum)
 
         if terminated or truncated:
             obs, info = env.reset()

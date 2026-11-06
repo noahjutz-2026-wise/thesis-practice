@@ -151,7 +151,30 @@ class LabyrinthEnv(MujocoEnv):
 
         point = self.line.interpolate(self.progress, normalized=True)
 
-        viewer._markers = [
+        board = self.data.body("board")
+        R, p = board.xmat.reshape(3, 3), board.xpos
+
+        def to_world(x, y):
+            return p + R @ np.array([x, y, 0.008])
+
+        pts = np.array([to_world(x, y) for x, y in self.waypoints])
+        markers = []
+        for a, b in zip(pts[:-1], pts[1:]):
+            z = (b - a) / np.linalg.norm(b - a)
+            x_ = np.array([z[1], -z[0], 0.0])
+            x_ /= np.linalg.norm(x_)
+            y_ = np.cross(z, x_)
+            mat = np.column_stack([x_, y_, z]).ravel()
+            markers.append(
+                {
+                    "type": mujoco.mjtGeom.mjGEOM_CYLINDER,
+                    "size": np.array([0.0015, np.linalg.norm(b - a) / 2, 0.0]),
+                    "pos": (a + b) / 2,
+                    "mat": mat,
+                    "rgba": np.array([0.0, 0.0, 1.0, 1.0], dtype=np.float32),
+                }
+            )
+        markers += [
             {
                 "type": mujoco.mjtGeom.mjGEOM_ARROW,
                 "size": np.array([0.002, 0.002, 0.03]),
@@ -162,8 +185,9 @@ class LabyrinthEnv(MujocoEnv):
             {
                 "type": mujoco.mjtGeom.mjGEOM_SPHERE,
                 "size": np.array([0.005, 0.0, 0.0]),
-                "pos": np.array([point.x, point.y, 0.02]),
+                "pos": to_world(point.x, point.y),
                 "rgba": np.array([0.0, 1.0, 0.0, 1.0], dtype=np.float32),
             },
         ]
+        viewer._markers = markers
         self.render()

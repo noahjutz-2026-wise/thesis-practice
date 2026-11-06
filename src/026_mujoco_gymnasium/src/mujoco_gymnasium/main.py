@@ -10,7 +10,7 @@ MUJOCO_XML = Path(__file__).parents[3] / "022_mujoco/export.xml"
 
 def main():
     env = labyrinth_env.LabyrinthEnv(
-        str(MUJOCO_XML), 3, render_mode="human", random_starts=False
+        str(MUJOCO_XML), 3, render_mode="human", random_starts=True
     )
     print(env)
     env.reset()

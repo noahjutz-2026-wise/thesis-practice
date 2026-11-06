@@ -22,5 +22,8 @@ def main():
         cum += reward
         print(cum)
 
+        cv2.imshow("f", obs["image"])
+        cv2.waitKey(1)
+
         if terminated or truncated:
             obs, info = env.reset()

@@ -32,7 +32,14 @@ class LabyrinthEnv(MujocoEnv):
         visual_options: dict[int, bool] | None = None,
         random_starts: bool = True,
     ):
-        observation_space = gymnasium.spaces.Box(-1, 1, shape=(8,))
+        observation_space = gymnasium.spaces.Dict(
+            {
+                "vec": gymnasium.spaces.Box(-1, 1, shape=(8,)),
+                "image": gymnasium.spaces.Box(
+                    0, 255, shape=(64, 64, 1), dtype=np.uint8
+                ),
+            }
+        )
         super().__init__(
             model_path,
             frame_skip,
@@ -59,6 +66,11 @@ class LabyrinthEnv(MujocoEnv):
         self.t = 0
         self.stall_idx = 0
         self.bp = np.zeros(())
+        cam_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_CAMERA, "ball_cam")
+        self.track_renderer = mujoco.Renderer(
+            self.model, height=64, width=64, camera_id=cam_id
+        )
+        self.buf = np.zeros((64, 64, 3), np.uint8)
 
     def step(
         self, action: NDArray[np.float32]
@@ -133,8 +145,12 @@ class LabyrinthEnv(MujocoEnv):
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data
         bv = self.data.sensor("sensor_ball_vel_wrt_world").data
 
+        if self.t % 10 == 0:
+            self.track_renderer.update_scene(self.data, camera="ball_cam")
+            self.track_renderer.render(out=self.buf)
+
         obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], self._dir_to_target(bp)])
-        return obs.astype(np.float32)
+        return {"vec": obs.astype(np.float32), "image": self.buf}
 
     def _dir_to_target(self, bp: NDArray[np.float64]) -> NDArray[np.float64]:
         look = 0.02

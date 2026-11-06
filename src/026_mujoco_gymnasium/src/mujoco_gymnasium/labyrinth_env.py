@@ -14,6 +14,8 @@ WAYPOINTS_PATH = (
     / "023_build123d/src/labyrinth_game_cad/layouts/cyberrunner_hard_layout.json"
 )
 
+WINDOW = 0.03  # normalized progress +/- used for reward subpath and highlight
+
 
 class LabyrinthEnv(MujocoEnv):
     def __init__(
@@ -71,7 +73,7 @@ class LabyrinthEnv(MujocoEnv):
 
         # reward
         xy = shapely.geometry.Point(bp[:-1])
-        lo, hi = max(0, self.progress - 0.01), min(1, self.progress + 0.01)
+        lo, hi = max(0, self.progress - WINDOW), min(1, self.progress + WINDOW)
         sub = substring(self.line, lo, hi, normalized=True)
         local = sub.project(xy, normalized=True)
         newp = lo + (hi - lo) * local
@@ -158,22 +160,42 @@ class LabyrinthEnv(MujocoEnv):
             return p + R @ np.array([x, y, 0.008])
 
         pts = np.array([to_world(x, y) for x, y in self.waypoints])
+        lo, hi = max(0.0, self.progress - WINDOW), min(1.0, self.progress + WINDOW)
+        seglen = np.linalg.norm(np.diff(self.waypoints, axis=0), axis=1)
+        cum = np.concatenate([[0.0], np.cumsum(seglen)])
+        cum /= cum[-1]
         markers = []
-        for a, b in zip(pts[:-1], pts[1:]):
+        for i, (a, b) in enumerate(zip(pts[:-1], pts[1:])):
             z = (b - a) / np.linalg.norm(b - a)
             x_ = np.array([z[1], -z[0], 0.0])
             x_ /= np.linalg.norm(x_)
             y_ = np.cross(z, x_)
             mat = np.column_stack([x_, y_, z]).ravel()
-            markers.append(
-                {
-                    "type": mujoco.mjtGeom.mjGEOM_CYLINDER,
-                    "size": np.array([0.0015, np.linalg.norm(b - a) / 2, 0.0]),
-                    "pos": (a + b) / 2,
-                    "mat": mat,
-                    "rgba": np.array([0.0, 0.0, 1.0, 1.0], dtype=np.float32),
-                }
-            )
+
+            def cyl(p0, p1, rgba):
+                d = p1 - p0
+                markers.append(
+                    {
+                        "type": mujoco.mjtGeom.mjGEOM_CYLINDER,
+                        "size": np.array([0.0015, np.linalg.norm(d) / 2, 0.0]),
+                        "pos": (p0 + p1) / 2,
+                        "mat": mat,
+                        "rgba": rgba,
+                    }
+                )
+
+            blue = np.array([0.0, 0.0, 1.0, 0.4], dtype=np.float32)
+            yellow = np.array([1.0, 0.9, 0.0, 1.0], dtype=np.float32)
+            t0, t1 = cum[i], cum[i + 1]
+            if t1 <= lo or t0 >= hi:  # fully outside window
+                cyl(a, b, blue)
+                continue
+            f = lambda t: a + (b - a) * ((t - t0) / (t1 - t0))
+            if lo > t0:
+                cyl(a, f(lo), blue)
+            cyl(f(max(lo, t0)), f(min(hi, t1)), yellow)
+            if hi < t1:
+                cyl(f(hi), b, blue)
         markers += [
             {
                 "type": mujoco.mjtGeom.mjGEOM_ARROW,

@@ -95,6 +95,12 @@ def scene() -> mujoco.MjSpec:
     )
     ball.add_freejoint(name="joint_ball_free")
 
+    ball.add_camera(
+        name="ball_cam",
+        pos=[0.0, 0.0, 0.5],
+        mode=mujoco.mjtCamLight.mjCAMLIGHT_TRACK,
+    )
+
     spec.add_sensor(
         type=mujoco.mjtSensor.mjSENS_JOINTPOS,
         name="sensor_board_rot_x",

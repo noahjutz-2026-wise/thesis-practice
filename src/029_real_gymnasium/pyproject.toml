@@ -7,7 +7,10 @@ authors = [
     { name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "gymnasium>=1.2.2",
+    "pyzmq>=27.3.0",
+]
 
 [project.scripts]
 real-gymnasium = "real_gymnasium:main"

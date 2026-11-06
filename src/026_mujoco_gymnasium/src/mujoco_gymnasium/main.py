@@ -24,3 +24,4 @@ def main():
 
         if terminated or truncated:
             obs, info = env.reset()
+            cum = 0

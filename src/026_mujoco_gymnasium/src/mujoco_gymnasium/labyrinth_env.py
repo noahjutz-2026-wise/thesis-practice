@@ -120,7 +120,9 @@ class LabyrinthEnv(MujocoEnv):
 
         if self.random_starts:
             idx = int(self.np_random.integers(len(self.waypoints)))
-            self.progress = idx / (len(self.waypoints) - 1)
+            self.progress = self.line.project(
+                shapely.geometry.Point(self.waypoints[idx]), normalized=True
+            )
             target_pos = self.waypoints[idx]
             target_pos += self.np_random.uniform(-0.002, 0.002, size=2)
             adr = self.model.joint("joint_ball_free").qposadr[0]

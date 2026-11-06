@@ -22,9 +22,5 @@ def main():
         cum += reward
         print(cum)
 
-        cv2.cvtColor(obs["image"][:, :, 0], cv2.COLOR_GRAY2BGR)
-        cv2.imshow("f", obs["image"])
-        cv2.waitKey(1)
-
         if terminated or truncated:
             obs, info = env.reset()

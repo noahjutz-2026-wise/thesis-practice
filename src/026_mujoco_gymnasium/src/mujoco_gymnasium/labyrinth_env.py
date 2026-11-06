@@ -32,14 +32,7 @@ class LabyrinthEnv(MujocoEnv):
         visual_options: dict[int, bool] | None = None,
         random_starts: bool = True,
     ):
-        observation_space = gymnasium.spaces.Dict(
-            {
-                "vec": gymnasium.spaces.Box(-1, 1, shape=(8,)),
-                "image": gymnasium.spaces.Box(
-                    0, 255, shape=(64, 64, 1), dtype=np.uint8
-                ),
-            }
-        )
+        observation_space = gymnasium.spaces.Box(-1, 1, shape=(8,))
         super().__init__(
             model_path,
             frame_skip,
@@ -66,8 +59,6 @@ class LabyrinthEnv(MujocoEnv):
         self.t = 0
         self.stall_idx = 0
         self.bp = np.zeros(())
-        self.track_renderer = mujoco.Renderer(self.model, height=64, width=64)
-        self.buf = np.zeros((64, 64, 3), np.uint8)
 
     def step(
         self, action: NDArray[np.float32]
@@ -142,15 +133,8 @@ class LabyrinthEnv(MujocoEnv):
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data
         bv = self.data.sensor("sensor_ball_vel_wrt_world").data
 
-        if self.t % 10 == 0:
-            self.track_renderer.update_scene(self.data, camera="ball_cam")
-            self.track_renderer.render(out=self.buf)
-            # grayscale in place: buffer becomes (64, 64, 1), matching the
-            # declared (64, 64, 1) space and is channel-order-free.
-            self.buf[:, :] = self.buf.mean(axis=-1, keepdims=True).astype(np.uint8)
-
         obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], self._dir_to_target(bp)])
-        return {"vec": obs.astype(np.float32), "image": self.buf}
+        return obs.astype(np.float32)
 
     def _dir_to_target(self, bp: NDArray[np.float64]) -> NDArray[np.float64]:
         look = 0.02
@@ -164,10 +148,6 @@ class LabyrinthEnv(MujocoEnv):
         dir_t = self._dir_to_target(bp)
 
         viewer = self.mujoco_renderer._get_viewer(self.render_mode)
-        # The offscreen ball_cam Renderer (used in _get_obs) makes its own GL
-        # context current, which leaves the window viewer's context inactive
-        # and freezes its image. Restore it before every human render.
-        viewer.make_context_current()
         quat, mat = np.zeros(4), np.zeros(9)
         mujoco.mju_quatZ2Vec(quat, np.array([dir_t[0], dir_t[1], 0.0]))
         mujoco.mju_quat2Mat(mat, quat)

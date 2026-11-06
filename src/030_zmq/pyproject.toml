@@ -3,16 +3,12 @@ name = "zmq-realtime"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }
-]
+authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.13"
-dependencies = [
-    "pyzmq>=27.3.0",
-]
+dependencies = ["pyzmq>=27.3.0"]
 
 [project.scripts]
-zmq-realtime = "zmq_realtime:main"
+zmqrt = "zmq_realtime.main:main"
 
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14.0"]

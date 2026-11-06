@@ -4,9 +4,10 @@ from pathlib import Path
 import gymnasium
 import mujoco
 import numpy as np
+import shapely
 from gymnasium.envs.mujoco.mujoco_env import DEFAULT_SIZE, MujocoEnv
 from numpy.typing import NDArray
-from scipy.spatial import KDTree
+from shapely.ops import substring
 
 WAYPOINTS_PATH = (
     Path(__file__).parents[3]
@@ -50,17 +51,8 @@ class LabyrinthEnv(MujocoEnv):
         with open(WAYPOINTS_PATH, "r") as f:
             waypoints = json.load(f)["waypoints"]
             self.waypoints = np.asarray(waypoints)
-            self.waypoints = np.array(
-                [
-                    np.interp(
-                        np.linspace(0, 1, 300),
-                        np.linspace(0, 1, len(waypoints)),
-                        np.asarray(waypoints)[:, k],
-                    )
-                    for k in range(2)
-                ]
-            ).T
-            self.waypoints_tree = KDTree(self.waypoints)
+            self.line = shapely.geometry.LineString(self.waypoints)
+
         self.progress = 0
         self.t = 0
         self.stall_idx = 0
@@ -78,11 +70,15 @@ class LabyrinthEnv(MujocoEnv):
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data.copy()
 
         # reward
-        dist, i = self.waypoints_tree.query(bp[:-1])
-        delta = i - self.progress
-        self.progress = i
+        xy = shapely.geometry.Point(bp[:-1])
+        lo, hi = max(0, self.progress - 0.01), min(1, self.progress + 0.01)
+        sub = substring(self.line, lo, hi, normalized=True)
+        local = sub.project(xy, normalized=True)
+        newp = lo + (hi - lo) * local
+        dist = sub.distance(xy)
+        delta = newp - self.progress
+        self.progress = newp
         reward = delta
-        reward = np.clip(reward, -2, 2)
         reward = np.float64(reward)
 
         # terminated
@@ -91,12 +87,13 @@ class LabyrinthEnv(MujocoEnv):
         else:
             self.stall_idx = 0
         self.bp = bp
-        is_offpath = dist > 0.05
+        is_offpath = dist > 0.15
+        if is_offpath:
+            print("OFFPATH")
         is_fallen = bp[-1] < -0.05
-        is_cheated = delta > 10
         is_stall = self.stall_idx >= 50
         is_goal = self.progress == len(self.waypoints) - 1
-        cond = np.array([is_offpath, is_fallen, is_cheated, is_stall, is_goal])
+        cond = np.array([is_offpath, is_fallen, is_stall, is_goal])
         terminated = bool(np.any(cond))
 
         truncated = self.t >= 50_000
@@ -133,9 +130,11 @@ class LabyrinthEnv(MujocoEnv):
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data
         bv = self.data.sensor("sensor_ball_vel_wrt_world").data
 
-        nxt = self.waypoints[min(self.progress + 1, len(self.waypoints) - 1)]
-        d = nxt - bp[:-1]
-        d /= np.linalg.norm(d) + 1e-8
+        look = 0.02
+        target = self.line.interpolate(min(1.0, self.progress + look), normalized=True)
+        to_target = np.array([target.x, target.y]) - bp[:-1]
+        dist_t = np.linalg.norm(to_target)
+        dir_t = to_target / (dist_t + 1e-8)
 
-        obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], d])
+        obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], dir_t])
         return obs.astype(np.float32)

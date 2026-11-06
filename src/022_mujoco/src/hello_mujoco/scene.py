@@ -63,7 +63,7 @@ def scene() -> mujoco.MjSpec:
         limited=True,
         range=[-10, 10],
         armature=0.005,
-        frictionloss=0.001,
+        frictionloss=0.01,
     )
     maze.add_joint(
         name="joint_y",
@@ -72,12 +72,12 @@ def scene() -> mujoco.MjSpec:
         limited=True,
         range=[-10, 10],
         armature=0.005,
-        frictionloss=0.001,
+        frictionloss=0.01,
     )
 
     ball = spec.worldbody.add_body(name="ball", pos=[0.01, 0.100, 0.01])
-    # ball.add_geom(type=mujoco.mjtGeom.mjGEOM_SPHERE, size=[0.007], mass=0.005)
-    # ball.add_freejoint(name="joint_ball_free")
+    ball.add_geom(type=mujoco.mjtGeom.mjGEOM_SPHERE, size=[0.007], mass=0.005)
+    ball.add_freejoint(name="joint_ball_free")
 
     spec.add_sensor(
         type=mujoco.mjtSensor.mjSENS_JOINTPOS,

@@ -170,7 +170,7 @@ class LabyrinthEnv(MujocoEnv):
             x_ = np.array([z[1], -z[0], 0.0])
             x_ /= np.linalg.norm(x_)
             y_ = np.cross(z, x_)
-            mat = np.column_stack([x_, y_, z]).ravel()
+            seg_mat = np.column_stack([x_, y_, z]).ravel()
 
             def cyl(p0, p1, rgba):
                 d = p1 - p0
@@ -179,7 +179,7 @@ class LabyrinthEnv(MujocoEnv):
                         "type": mujoco.mjtGeom.mjGEOM_CYLINDER,
                         "size": np.array([0.0015, np.linalg.norm(d) / 2, 0.0]),
                         "pos": (p0 + p1) / 2,
-                        "mat": mat,
+                        "mat": seg_mat,
                         "rgba": rgba,
                     }
                 )

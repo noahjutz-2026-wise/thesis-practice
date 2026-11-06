@@ -92,7 +92,7 @@ class LabyrinthEnv(MujocoEnv):
             print("OFFPATH")
         is_fallen = bp[-1] < -0.05
         is_stall = self.stall_idx >= 50
-        is_goal = self.progress == len(self.waypoints) - 1
+        is_goal = self.progress >= 1.0
         cond = np.array([is_offpath, is_fallen, is_stall, is_goal])
         terminated = bool(np.any(cond))
 
@@ -115,7 +115,7 @@ class LabyrinthEnv(MujocoEnv):
 
         if self.random_starts:
             idx = int(self.np_random.integers(len(self.waypoints)))
-            self.progress = idx
+            self.progress = idx / (len(self.waypoints) - 1)
             target_pos = self.waypoints[idx]
             target_pos += self.np_random.uniform(-0.002, 0.002, size=2)
             adr = self.model.joint("joint_ball_free").qposadr[0]

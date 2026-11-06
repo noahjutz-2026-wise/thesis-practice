@@ -90,8 +90,6 @@ class LabyrinthEnv(MujocoEnv):
             self.stall_idx = 0
         self.bp = bp
         is_offpath = dist > 0.03
-        if is_offpath:
-            print("OFFPATH")
         is_fallen = bp[-1] < -0.05
         is_stall = self.stall_idx >= 50
         is_goal = self.progress >= 1.0

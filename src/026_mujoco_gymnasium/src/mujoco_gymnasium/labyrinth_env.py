@@ -70,8 +70,8 @@ class LabyrinthEnv(MujocoEnv):
         self, action: NDArray[np.float32]
     ) -> tuple[NDArray[np.float64], np.float64, bool, bool, dict[str, np.float64]]:
         ctrl = np.zeros(self.model.nu)
-        ctrl[self.ix] = action[0]
-        ctrl[self.iy] = action[1]
+        # ctrl[self.ix] = action[0]
+        # ctrl[self.iy] = action[1]
         self.do_simulation(ctrl, self.frame_skip)
 
         obs = self._get_obs()
@@ -127,8 +127,8 @@ class LabyrinthEnv(MujocoEnv):
         return self._get_obs()
 
     def _get_obs(self):
-        rx = self.data.sensor("sensor_board_rot_x").data
-        ry = self.data.sensor("sensor_board_rot_y").data
+        # rx = self.data.sensor("sensor_board_rot_x").data
+        # ry = self.data.sensor("sensor_board_rot_y").data
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data
         bv = self.data.sensor("sensor_ball_vel_wrt_world").data
 
@@ -136,5 +136,11 @@ class LabyrinthEnv(MujocoEnv):
         d = nxt - bp[:-1]
         d /= np.linalg.norm(d) + 1e-8
 
-        obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], d])
+        obs = np.concatenate([bp[:-1], bv[:-1], d])
+
+        # dbg
+        if self.t % 100 == 0:
+            accel = self.data.sensor("sensor_imu_acc").data
+            gyro = self.data.sensor("sensor_imu_gyro").data
+            print(np.concatenate([accel, gyro]))
         return obs.astype(np.float32)

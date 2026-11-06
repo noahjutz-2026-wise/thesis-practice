@@ -15,14 +15,19 @@ Z = 0.022
 def scene() -> mujoco.MjSpec:
     spec = mujoco.MjSpec()
     spec.worldbody.add_light(
-        pos=[0, 0, 5], type=mujoco.mjtLightType.mjLIGHT_DIRECTIONAL
+        pos=[0, 0, 5],
+        dir=[0, 0, -1],
+        type=mujoco.mjtLightType.mjLIGHT_DIRECTIONAL,
+        diffuse=[0.4, 0.4, 0.4],  # lower = dimmer
+        specular=[0, 0, 0],  # no highlights
+        ambient=[0.01, 0.01, 0.01],
     )
     spec.option.timestep = 0.002
 
     spec.worldbody.add_geom(
         type=mujoco.mjtGeom.mjGEOM_PLANE,
         size=[0, 0, 0.1],
-        rgba=[1, 0, 0, 1],
+        rgba=[1, 1, 1, 0.1],
         pos=[0, 0, -0.15],
     )
 
@@ -40,14 +45,22 @@ def scene() -> mujoco.MjSpec:
         ],
     )
 
-    for name in ["floor", "outer", "walls"]:
-        base_path = MESH_PATH / f"{name}_parts"
+    colors = {
+        "floor": [0.929, 0.796, 0.624, 1],
+        "walls": [0.388, 0.141, 0, 1],
+        "outer": [0.929, 0.796, 0.624, 1],
+    }
+
+    for part in ["floor", "outer", "walls"]:
+        base_path = MESH_PATH / f"{part}_parts"
         for p in os.listdir(base_path):
             name = basename(p)
             spec.add_mesh(
                 name=name, file=str(base_path / p), scale=[0.001, 0.001, 0.001]
             )
-            maze.add_geom(type=mujoco.mjtGeom.mjGEOM_MESH, meshname=name)
+            maze.add_geom(
+                type=mujoco.mjtGeom.mjGEOM_MESH, meshname=name, rgba=colors[part]
+            )
 
     maze.add_site(
         name="imu_site",

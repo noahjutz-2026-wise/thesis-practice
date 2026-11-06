@@ -99,7 +99,7 @@ class LabyrinthEnv(MujocoEnv):
         truncated = self.t >= 50_000
         info = {}  # TODO
         if self.render_mode == "human":
-            self.render()
+            self._render_human()
         self.t += 1
         return obs, reward, terminated, truncated, info
 
@@ -130,11 +130,32 @@ class LabyrinthEnv(MujocoEnv):
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data
         bv = self.data.sensor("sensor_ball_vel_wrt_world").data
 
+        obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], self._dir_to_target(bp)])
+        return obs.astype(np.float32)
+
+    def _dir_to_target(self, bp: NDArray[np.float64]) -> NDArray[np.float64]:
         look = 0.02
         target = self.line.interpolate(min(1.0, self.progress + look), normalized=True)
         to_target = np.array([target.x, target.y]) - bp[:-1]
         dist_t = np.linalg.norm(to_target)
-        dir_t = to_target / (dist_t + 1e-8)
+        return to_target / (dist_t + 1e-8)
 
-        obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], dir_t])
-        return obs.astype(np.float32)
+    def _render_human(self):
+        bp = self.data.sensor("sensor_ball_pos_wrt_board").data
+        dir_t = self._dir_to_target(bp)
+
+        viewer = self.mujoco_renderer._get_viewer(self.render_mode)
+        quat, mat = np.zeros(4), np.zeros(9)
+        mujoco.mju_quatZ2Vec(quat, np.array([dir_t[0], dir_t[1], 0.0]))
+        mujoco.mju_quat2Mat(mat, quat)
+
+        viewer._markers = [
+            {
+                "type": mujoco.mjtGeom.mjGEOM_ARROW,
+                "size": np.array([0.002, 0.002, 0.03]),
+                "pos": self.data.body("ball").xpos + [0, 0, 0.02],
+                "mat": mat,  # flat, shape (9,)
+                "rgba": np.array([1.0, 0.0, 0.0, 1.0], dtype=np.float32),
+            }
+        ]
+        self.render()

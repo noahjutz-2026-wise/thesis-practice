@@ -19,15 +19,29 @@ def publisher(pub):
         pub.send_pyobj(i)
 
 
+def run_proxy(xsub, xpub):
+    zmq.proxy(xsub, xpub)
+
+
 def main():
     ctx = zmq.Context.instance()
-    with ctx.socket(zmq.SUB) as sub, ctx.socket(zmq.PUB) as pub:
-        sub.setsockopt(zmq.CONFLATE, 1)
-        sub.setsockopt(zmq.SUBSCRIBE, b"")
-        sub.bind("inproc://hello")
-        pub.setsockopt(zmq.CONFLATE, 1)
-        pub.connect("inproc://hello")
+    with (
+        ctx.socket(zmq.SUB) as sub,
+        ctx.socket(zmq.PUB) as pub,
+        ctx.socket(zmq.XSUB) as xsub,
+        ctx.socket(zmq.XPUB) as xpub,
+    ):
+        xpub.bind("inproc://xpub")
+        xsub.bind("inproc://xsub")
 
+        sub.setsockopt(zmq.SUBSCRIBE, b"")
+        sub.setsockopt(zmq.CONFLATE, 1)
+        pub.setsockopt(zmq.CONFLATE, 1)
+
+        pub.connect("inproc://xsub")
+        sub.connect("inproc://xpub")
+
+        threading.Thread(target=run_proxy, args=(xsub, xpub)).start()
         threading.Thread(target=subscriber, args=(sub,)).start()
 
         publisher(pub)

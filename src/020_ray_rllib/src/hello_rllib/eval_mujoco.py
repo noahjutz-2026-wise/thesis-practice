@@ -30,6 +30,7 @@ def main():
 
         terminated = False
         truncated = False
+        ret = 0
         while not (terminated or truncated):
             shared_data = {}
             batch = env_to_module(
@@ -49,7 +50,10 @@ def main():
             )
             action_batch = to_env.pop(Columns.ACTIONS)
             action = unbatch(action_batch)[0]
+            # print(action)
             observation, reward, terminated, truncated, info = env.step(action)
+            ret += reward
+            print(ret)
             episode.add_env_step(
                 observation,
                 action,

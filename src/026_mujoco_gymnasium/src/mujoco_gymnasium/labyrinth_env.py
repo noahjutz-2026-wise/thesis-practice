@@ -61,16 +61,6 @@ class LabyrinthEnv(MujocoEnv):
                 ]
             ).T
             self.waypoints_tree = KDTree(self.waypoints)
-
-            self._path_markers = [
-                {
-                    "type": mujoco.mjtGeom.mjGEOM_SPHERE,
-                    "size": np.array([0.002, 0.002, 0.002]),
-                    "pos": np.array([x, y, 0.017]),
-                    "rgba": np.array([0.2, 0.8, 0.2, 0.4], dtype=np.float32),
-                }
-                for x, y in self.waypoints
-            ]
         self.progress = 0
         self.t = 0
         self.stall_idx = 0
@@ -146,17 +136,6 @@ class LabyrinthEnv(MujocoEnv):
         nxt = self.waypoints[min(self.progress + 1, len(self.waypoints) - 1)]
         d = nxt - bp[:-1]
         d /= np.linalg.norm(d) + 1e-8
-
-        if self.render_mode == "human":
-            viewer = self.mujoco_renderer._get_viewer(self.render_mode)
-            viewer._markers = self._path_markers + [
-                {
-                    "type": mujoco.mjtGeom.mjGEOM_SPHERE,
-                    "size": np.array([0.004, 0.004, 0.004]),
-                    "pos": np.array([*self.waypoints[self.progress], 0.017]),
-                    "rgba": np.array([1.0, 0.0, 0.0, 0.9], dtype=np.float32),
-                }
-            ]
 
         obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], d])
         return obs.astype(np.float32)

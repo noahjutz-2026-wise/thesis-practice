@@ -10,35 +10,32 @@
 #include <Wire.h>
 
 Adafruit_MPU6050 mpu;
+Adafruit_Mahony filter;
 
 void setup(void) {
   Serial.begin(230400);
-  if (!mpu.begin()) {
-    while (1)
-      delay(10);
+  while (!mpu.begin()) {
+    Serial.println("MPU not yet ready");
+    delay(10);
   }
+  Wire.setWireTimeout(3000, true);
   mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
   mpu.setGyroRange(MPU6050_RANGE_250_DEG);
   mpu.setFilterBandwidth(MPU6050_BAND_184_HZ);
+  filter.begin(100);
 }
 
 void loop(void) {
   sensors_event_t a, g, temp;
   mpu.getEvent(&a, &g, &temp);
 
-  Serial.print(micros());
-  Serial.print(',');
-  Serial.print(a.acceleration.x, 4);
-  Serial.print(',');
-  Serial.print(a.acceleration.y, 4);
-  Serial.print(',');
-  Serial.print(a.acceleration.z, 4);
-  Serial.print(',');
-  Serial.print(g.gyro.x, 4);
-  Serial.print(',');
-  Serial.print(g.gyro.y, 4);
-  Serial.print(',');
-  Serial.print(g.gyro.z, 4);
-  Serial.print(',');
-  Serial.println(temp.temperature, 2);
+  filter.updateIMU(g.gyro.x * 57.2958f, g.gyro.y * 57.2958f,
+                   g.gyro.z * 57.2958f, a.acceleration.x / 9.80665f,
+                   a.acceleration.y / 9.80665f, a.acceleration.z / 9.80665f);
+
+  Serial.print(filter.getRoll());
+  Serial.print(",");
+  Serial.print(filter.getPitch());
+  Serial.print(",");
+  Serial.println(filter.getYaw());
 }

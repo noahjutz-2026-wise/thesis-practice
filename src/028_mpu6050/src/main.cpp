@@ -4,6 +4,7 @@
 // Adafruit library scales them; a simple Python reader is
 //   line.split(",") -> [float(x) for x in parts].
 
+#include <Adafruit_AHRS.h>
 #include <Adafruit_MPU6050.h>
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
@@ -16,9 +17,9 @@ void setup(void) {
     while (1)
       delay(10);
   }
-  mpu.setAccelerometerRange(MPU6050_RANGE_8_G); // 4096 LSB/g
-  mpu.setGyroRange(MPU6050_RANGE_500_DEG);      // 65.5 LSB/(deg/s)
-  mpu.setFilterBandwidth(MPU6050_BAND_184_HZ);  // low lag, ok at ~500 Hz
+  mpu.setAccelerometerRange(MPU6050_RANGE_8_G);
+  mpu.setGyroRange(MPU6050_RANGE_250_DEG);
+  mpu.setFilterBandwidth(MPU6050_BAND_184_HZ);
 }
 
 void loop(void) {

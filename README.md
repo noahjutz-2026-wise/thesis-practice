@@ -14,5 +14,5 @@ Each directory under `src` is self-contained.
 | Directories | Description                               |
 | ----------- | ----------------------------------------- |
 | 0xx         | Quick tool evaluations, early experiments |
-| 8xx         | Early proof-of-concept projects           |
+| 7xx         | Prototypes                                |
 | 9xx         | Entirely AI-Generated single-use code     |

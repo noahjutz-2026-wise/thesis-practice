@@ -46,7 +46,7 @@ def main():
 
     dreamerv3 = dreamerv3_config.build_algo()
 
-    algo = dreamerv3
+    algo = ppo
 
     try:
         module = algo.get_module()

@@ -2,6 +2,8 @@ import itertools
 from pathlib import Path
 
 from mujoco_gymnasium.labyrinth_env import LabyrinthEnv
+from ray import tune
+from ray.air.integrations.wandb import WandbLoggerCallback
 from ray.rllib.algorithms.dreamerv3 import DreamerV3Config
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.tune.registry import register_env
@@ -47,6 +49,14 @@ def main():
     dreamerv3 = dreamerv3_config.build_algo()
 
     algo = ppo
+
+    tuner = tune.Tuner(
+        run_config=tune.RunConfig(
+            callbacks=[WandbLoggerCallback(entity="tjno", project="crs2r_results")],
+            stop={"num_env_steps_sampled_lifetime": 2_000_000},
+        ),
+        param_space=ppo_config,
+    )
 
     try:
         module = algo.get_module()

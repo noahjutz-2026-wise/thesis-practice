@@ -10,6 +10,7 @@ dependencies = [
     "mujoco-gymnasium",
     "pillow>=12.3.0",
     "ray[default,rllib]>=2.59.0",
+    "real-gymnasium",
     "torch>=2.14.1",
     "wandb>=0.31.0",
 ]
@@ -25,3 +26,4 @@ build-backend = "uv_build"
 
 [tool.uv.sources]
 mujoco-gymnasium = { path = "../026_mujoco_gymnasium", editable = true }
+real-gymnasium = { path = "../029_real_gymnasium", editable = true }

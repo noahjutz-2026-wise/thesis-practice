@@ -8,6 +8,7 @@ from ray.rllib.algorithms.algorithm import Algorithm
 from ray.rllib.algorithms.dreamerv3 import DreamerV3Config
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.tune.registry import register_env
+from real_gymnasium.labyrinth_real_env import LabyrinthRealEnv
 
 MUJOCO_XML = Path(__file__).parents[3] / "022_mujoco/export.xml"
 CHECKPOINT_PATH = Path(__file__).parents[2] / "ckpt"
@@ -33,15 +34,9 @@ def _save_checkpoint(*, algorithm: Algorithm, **kwargs):
     module.save_to_path(CHECKPOINT_PATH)
 
 
-def main():
-    def env(ctx):
-        return LabyrinthEnv(str(MUJOCO_XML), 3)
-
-    register_env("labyrinth_env", env)
-
-    ppo_config = (
+def ppo_config():
+    return (
         PPOConfig()
-        .environment("labyrinth_env")
         .env_runners(
             num_env_runners=N_ENV_RUNNERS,
             num_envs_per_env_runner=N_ENVS_PER_RUNNER,
@@ -58,12 +53,32 @@ def main():
         )
     )
 
-    dreamerv3_config = (
-        DreamerV3Config()
-        .environment("labyrinth_env")
-        .learners(num_learners=0, num_gpus_per_learner=1)
-    )
 
+def dreamerv3_config():
+    return DreamerV3Config().learners(num_learners=0, num_gpus_per_learner=1)
+
+
+def sim_env():
+    name = "labyrinth_game_real"
+
+    def env(ctx):
+        return LabyrinthRealEnv()
+
+    register_env(name, env)
+    return name
+
+
+def real_env():
+    name = "labyrinth_game_real"
+
+    def env(ctx):
+        return LabyrinthEnv(str(MUJOCO_XML), 3)
+
+    register_env(name, env)
+    return name
+
+
+def main():
     tuner = tune.Tuner(
         "PPO",
         run_config=tune.RunConfig(

@@ -58,17 +58,11 @@ def main():
         )
     )
 
-    ppo = ppo_config.build_algo()
-
     dreamerv3_config = (
         DreamerV3Config()
         .environment("labyrinth_env")
         .learners(num_learners=0, num_gpus_per_learner=1)
     )
-
-    dreamerv3 = dreamerv3_config.build_algo()
-
-    algo = ppo
 
     tuner = tune.Tuner(
         "PPO",
@@ -79,13 +73,4 @@ def main():
         param_space=ppo_config,
     )
 
-    nan = float("nan")
-    for i in itertools.count():
-        r = algo.train()["env_runners"]
-        if i % 5 == 0:
-            print(
-                f"iter {i:3d} | steps {r.get('num_env_steps_sampled_lifetime', 0):.0f} | "
-                f"return {r.get('episode_return_mean', nan):.2f} "
-                f"[{r.get('episode_return_min', nan):.1f}, {r.get('episode_return_max', nan):.1f}] | "
-                f"len {r.get('episode_len_mean', nan):.1f}"
-            )
+    tuner.fit()

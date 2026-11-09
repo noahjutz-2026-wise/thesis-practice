@@ -4,6 +4,7 @@ from pathlib import Path
 from mujoco_gymnasium.labyrinth_env import LabyrinthEnv
 from ray import tune
 from ray.air.integrations.wandb import WandbLoggerCallback
+from ray.rllib.algorithms.algorithm import Algorithm
 from ray.rllib.algorithms.dreamerv3 import DreamerV3Config
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.tune.registry import register_env
@@ -14,6 +15,22 @@ CHECKPOINT_PATH = Path(__file__).parents[2] / "ckpt"
 N_ENV_RUNNERS = 28
 N_ENVS_PER_RUNNER = 8
 ROLLOUT_FRAGMENT_LENGTH = 128
+
+
+def _restore_checkpoint(*, algorithm: Algorithm, **kwargs):
+    try:
+        module = algorithm.get_module()
+        assert module is not None
+        module.restore_from_path(CHECKPOINT_PATH)
+    except (ValueError, FileNotFoundError):
+        print("unable to restore module")
+
+
+def _save_checkpoint(*, algorithm: Algorithm, **kwargs):
+    print("saving module")
+    module = algorithm.get_module()
+    assert module is not None
+    module.save_to_path(CHECKPOINT_PATH)
 
 
 def main():
@@ -36,6 +53,9 @@ def main():
             * N_ENVS_PER_RUNNER
             * ROLLOUT_FRAGMENT_LENGTH
         )
+        .callbacks(
+            on_algorithm_init=_restore_checkpoint, on_train_result=_save_checkpoint
+        )
     )
 
     ppo = ppo_config.build_algo()
@@ -51,19 +71,13 @@ def main():
     algo = ppo
 
     tuner = tune.Tuner(
+        "PPO",
         run_config=tune.RunConfig(
             callbacks=[WandbLoggerCallback(entity="tjno", project="crs2r_results")],
             stop={"num_env_steps_sampled_lifetime": 2_000_000},
         ),
         param_space=ppo_config,
     )
-
-    try:
-        module = algo.get_module()
-        assert module is not None
-        module.restore_from_path(CHECKPOINT_PATH)
-    except (ValueError, FileNotFoundError):
-        print("unable to restore checkpoint")
 
     nan = float("nan")
     for i in itertools.count():
@@ -75,7 +89,3 @@ def main():
                 f"[{r.get('episode_return_min', nan):.1f}, {r.get('episode_return_max', nan):.1f}] | "
                 f"len {r.get('episode_len_mean', nan):.1f}"
             )
-        if i % 10 == 0:
-            module = algo.get_module()
-            assert module is not None
-            module.save_to_path(CHECKPOINT_PATH)

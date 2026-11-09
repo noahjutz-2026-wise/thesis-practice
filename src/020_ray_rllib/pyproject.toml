@@ -11,6 +11,7 @@ dependencies = [
     "pillow>=12.3.0",
     "ray[default,rllib]>=2.59.0",
     "torch>=2.14.1",
+    "wandb>=0.31.0",
 ]
 
 [project.scripts]

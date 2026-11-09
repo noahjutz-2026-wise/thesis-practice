@@ -16,9 +16,13 @@ dependencies = [
 ]
 
 [project.scripts]
-hello-rllib = "hello_rllib.main:main"
-train-m = "hello_rllib.train_mujoco:main"
-eval-m = "hello_rllib.eval_mujoco:main"
+train-mujoco = "hello_rllib.main:train_mujoco"
+eval-mujoco = "hello_rllib.main:eval_mujoco"
+train-real = "hello_rllib.main:train_real"
+eval-real = "hello_rllib.main:eval_real"
+
+train-m = "hello_rllib.train_mujoco:main" # Deprecated
+eval-m = "hello_rllib.eval_mujoco:main"   # Deprecated
 
 [build-system]
 requires = ["uv_build>=0.12.24,<0.13.0"]

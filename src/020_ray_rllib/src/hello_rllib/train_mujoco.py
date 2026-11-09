@@ -1,4 +1,3 @@
-import itertools
 from pathlib import Path
 
 from mujoco_gymnasium.labyrinth_env import LabyrinthEnv

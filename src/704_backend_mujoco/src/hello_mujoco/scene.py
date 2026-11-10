@@ -5,7 +5,7 @@ import mujoco
 import numpy as np
 from mujoco.rendering.classic.gl_context import os
 
-MESH_PATH = Path("../023_build123d/")
+MESH_PATH = Path(__file__).parents[3] / "706_maze_build123d"
 
 X = 0.290
 Y = 0.245

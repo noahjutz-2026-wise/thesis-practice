@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 from mujoco_gymnasium.labyrinth_env import LabyrinthEnv
@@ -10,9 +11,12 @@ from ray.rllib.env.single_agent_episode import SingleAgentEpisode
 from ray.rllib.utils.spaces.space_utils import unbatch
 from ray.tune.registry import register_env
 
-MUJOCO_XML = Path(__file__).parents[3] / "022_mujoco/export.xml"
+MUJOCO_XML = Path(__file__).parents[3] / "704_backend_mujoco/export.xml"
 
-CHECKPOINT_PATH = Path(__file__).parents[2] / "ckpt"
+CHECKPOINT_PATH = (
+    max((Path.home() / "ray_results").glob("*/*/checkpoint_*"))
+    / "learner_group/learner/rl_module/default_policy"
+)
 
 
 def main():

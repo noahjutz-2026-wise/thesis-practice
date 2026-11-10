@@ -8,10 +8,10 @@ requires-python = ">=3.13"
 dependencies = [
     "gymnasium[classic-control]>=1.2.2",
     "mujoco-gymnasium",
-    "pillow>=12.3.0",
-    "ray[default,rllib]>=2.59.0",
+    "pillow>=13.0.0",
+    "ray[default,rllib]>=2.60.0",
     "real-gymnasium",
-    "torch>=2.14.1",
+    "torch>=2.15.0",
     "wandb>=0.31.0",
 ]
 

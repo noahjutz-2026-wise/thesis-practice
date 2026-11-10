@@ -3,10 +3,20 @@
 ## Quickstart
 
 ```bash
-uv run --with watchfiles watchfiles "python src/labyrinth_game_cad/server.py"
+uv run export
 ```
 
-Decompose to convex parts:
+## Development
+
+```bash
+uv run server
+```
+
+Visit http://localhost:32323
+
+## More info
+
+Manually decompose to convex parts:
 
 ```bash
 uv run coacd -i part0.stl -o floor.stl -t 0.005 --split

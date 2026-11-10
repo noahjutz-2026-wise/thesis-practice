@@ -59,6 +59,9 @@ class LabyrinthEnv(MujocoEnv):
         self.t = 0
         self.stall_idx = 0
         self.bp = np.zeros(())
+        cam_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_CAMERA, "ball_cam")
+        self.track_renderer = mujoco.Renderer(self.model, height=64, width=64)
+        self.buf = np.zeros((64, 64, 3), np.uint8)
 
     def step(
         self, action: NDArray[np.float32]
@@ -136,9 +139,17 @@ class LabyrinthEnv(MujocoEnv):
         ry = self.data.sensor("sensor_board_rot_y").data
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data
         bv = self.data.sensor("sensor_ball_vel_wrt_world").data
+        img = self._get_subimg().flatten()
 
-        obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], self._dir_to_target(bp)])
+        obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], self._dir_to_target(bp), img])
         return obs.astype(np.float32)
+
+    def _get_subimg(self) -> NDArray[np.uint8]:
+        self.track_renderer.update_scene(self.data, camera="ball_cam")
+        self.track_renderer.render(out=self.buf)
+        # grayscale in place: (64, 64, 1) uint8, channel-order-free
+        self.buf[:, :] = self.buf.mean(axis=-1, keepdims=True).astype(np.uint8)
+        return self.buf[:, :, 0]
 
     def _dir_to_target(self, bp: NDArray[np.float64]) -> NDArray[np.float64]:
         look = 0.02
@@ -152,6 +163,7 @@ class LabyrinthEnv(MujocoEnv):
         dir_t = self._dir_to_target(bp)
 
         viewer = self.mujoco_renderer._get_viewer(self.render_mode)
+        viewer.make_context_current()
         quat, mat = np.zeros(4), np.zeros(9)
         mujoco.mju_quatZ2Vec(quat, np.array([dir_t[0], dir_t[1], 0.0]))
         mujoco.mju_quat2Mat(mat, quat)

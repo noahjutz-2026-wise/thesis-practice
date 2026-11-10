@@ -11,7 +11,7 @@ from shapely.ops import substring
 
 WAYPOINTS_PATH = (
     Path(__file__).parents[3]
-    / "023_build123d/src/labyrinth_game_cad/layouts/cyberrunner_hard_layout.json"
+    / "706_maze_build123d/src/labyrinth_game_cad/layouts/cyberrunner_hard_layout.json"
 )
 
 WINDOW = 0.03  # normalized progress +/- used for reward subpath and highlight

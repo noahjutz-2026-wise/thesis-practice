@@ -10,13 +10,14 @@ from ray.rllib.utils.spaces.space_utils import unbatch
 
 MUJOCO_XML = Path(__file__).parents[3] / "704_backend_mujoco/export.xml"
 
-CHECKPOINT_PATH = (
-    max((Path.home() / "ray_results").glob("*/*/checkpoint_*"))
-    / "learner_group/learner/rl_module/default_policy"
-)
+CHECKPOINT_PATH = max(
+    (Path.home() / "ray_results").glob("**/checkpoint_*"),
+    key=lambda p: p.stat().st_mtime,
+) / "learner_group/learner/rl_module/default_policy"
 
 
 def main():
+    print(CHECKPOINT_PATH)
     env = LabyrinthEnv(str(MUJOCO_XML), 3, render_mode="human")
     obs, _ = env.reset()
 

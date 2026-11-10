@@ -9,7 +9,7 @@ from ray.rllib.algorithms.ppo import PPOConfig
 from ray.tune.registry import register_env
 from real_gymnasium.labyrinth_real_env import LabyrinthRealEnv
 
-MUJOCO_XML = Path(__file__).parents[3] / "022_mujoco/export.xml"
+MUJOCO_XML = Path(__file__).parents[3] / "704_backend_mujoco/export.xml"
 CHECKPOINT_PATH = Path(__file__).parents[2] / "ckpt"
 
 N_ENV_RUNNERS = 28

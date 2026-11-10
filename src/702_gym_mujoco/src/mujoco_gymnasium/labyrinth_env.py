@@ -32,7 +32,7 @@ class LabyrinthEnv(MujocoEnv):
         visual_options: dict[int, bool] | None = None,
         random_starts: bool = True,
     ):
-        observation_space = gym.spaces.Box(0, 255, shape=(64, 64, 1), dtype=np.uint8)
+        observation_space = gym.spaces.Box(0, 255, shape=(64, 64, 3), dtype=np.float32)
         super().__init__(
             model_path,
             frame_skip,
@@ -140,7 +140,7 @@ class LabyrinthEnv(MujocoEnv):
         # bp = self.data.sensor("sensor_ball_pos_wrt_board").data
         # bv = self.data.sensor("sensor_ball_vel_wrt_world").data
         img = self._get_subimg()
-        return img
+        return img.astype(np.float32)
 
         obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], self._dir_to_target(bp), img])
         return obs.astype(np.float32)
@@ -148,9 +148,7 @@ class LabyrinthEnv(MujocoEnv):
     def _get_subimg(self) -> NDArray[np.uint8]:
         self.track_renderer.update_scene(self.data, camera="ball_cam")
         self.track_renderer.render(out=self.buf)
-        # grayscale in place: (64, 64, 1) uint8, channel-order-free
-        self.buf[:, :] = self.buf.mean(axis=-1, keepdims=True).astype(np.uint8)
-        return self.buf[:, :, 0]
+        return self.buf
 
     def _dir_to_target(self, bp: NDArray[np.float64]) -> NDArray[np.float64]:
         look = 0.02

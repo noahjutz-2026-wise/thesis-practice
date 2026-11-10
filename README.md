@@ -9,7 +9,7 @@ git lfs pull
 
 ## Structure
 
-Each directory under `src` is self-contained.
+Almost every directory under `src` is self-contained.
 
 | Directories | Description                               |
 | ----------- | ----------------------------------------- |

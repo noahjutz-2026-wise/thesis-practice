@@ -57,7 +57,7 @@ def dreamerv3_config():
     return DreamerV3Config().learners(num_learners=0, num_gpus_per_learner=1)
 
 
-def sim_env():
+def real_env():
     name = "labyrinth_game_real"
 
     def env(ctx):
@@ -67,7 +67,7 @@ def sim_env():
     return name
 
 
-def real_env():
+def sim_env():
     name = "labyrinth_game_real"
 
     def env(ctx):

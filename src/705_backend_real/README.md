@@ -1,5 +1,9 @@
 # Backend Real
 
+## Prerequisites
+
+Calibrate camera fisheye and select markers: [025_opencv](../025_opencv/README.md)
+
 ## Quickstart
 
 ```bash

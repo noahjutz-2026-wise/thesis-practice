@@ -104,7 +104,7 @@ class LabyrinthEnv(MujocoEnv):
         cond = np.array([is_offpath, is_fallen, is_stall, is_goal])
         terminated = bool(np.any(cond))
 
-        truncated = self.t >= 50_000
+        truncated = self.t >= 1000
         info = {}  # TODO
         if self.render_mode == "human":
             self._render_human()

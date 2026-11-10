@@ -2,6 +2,7 @@ import itertools
 from pathlib import Path
 
 import cv2
+import numpy as np
 
 from mujoco_gymnasium import labyrinth_env
 
@@ -20,7 +21,11 @@ def main():
         action = env.action_space.sample()
         obs, reward, terminated, truncated, info = env.step(action)
         cum += reward
-        print(cum)
+        # print(cum)
+
+        img = obs[-(64 * 64) :].reshape(64, 64).astype(np.uint8)
+        cv2.imshow("f", img)
+        cv2.waitKey(1)
 
         if terminated or truncated:
             obs, info = env.reset()

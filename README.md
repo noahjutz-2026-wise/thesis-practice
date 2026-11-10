@@ -14,8 +14,8 @@ For details, see each README.
 |     | README                                                 | Task                                                  |
 | --- | ------------------------------------------------------ | ----------------------------------------------------- |
 | 1   | [706_maze_build123d](src/706_maze_build123d/README.md) | `uv run export`                                       |
-| 2   | [705_backend_mujoco](src/705_backend_mujoco/README.md) | `uv run build-xml`                                    |
-| 3   | [704_backend_real](src/704_backend_real/README.md)     | `podman-compose up -d --build`                        |
+| 2   | [704_backend_mujoco](src/704_backend_mujoco/README.md) | `uv run build-xml`                                    |
+| 3   | [705_backend_real](src/705_backend_real/README.md)     | `podman-compose up -d --build`                        |
 | 4   | [701_pipeline_rllib](src/701_pipeline_rllib/README.md) | `RAY_ENABLE_UV_RUN_RUNTIME_ENV=0 uv run train-mujoco` |
 
 ## Structure

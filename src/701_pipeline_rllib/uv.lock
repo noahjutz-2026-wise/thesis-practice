@@ -1006,10 +1006,10 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "gymnasium", extras = ["classic-control"], specifier = ">=1.2.2" },
-    { name = "mujoco-gymnasium", editable = "../026_mujoco_gymnasium" },
+    { name = "mujoco-gymnasium", editable = "../702_gym_mujoco" },
     { name = "pillow", specifier = ">=12.3.0" },
     { name = "ray", extras = ["default", "rllib"], specifier = ">=2.59.0" },
-    { name = "real-gymnasium", editable = "../029_real_gymnasium" },
+    { name = "real-gymnasium", editable = "../703_gym_real" },
     { name = "torch", specifier = ">=2.14.1" },
     { name = "wandb", specifier = ">=0.31.0" },
 ]
@@ -1548,7 +1548,7 @@ wheels = [
 [[package]]
 name = "mujoco-gymnasium"
 version = "0.1.0"
-source = { editable = "../026_mujoco_gymnasium" }
+source = { editable = "../702_gym_mujoco" }
 dependencies = [
     { name = "brax" },
     { name = "gymnasium" },
@@ -2910,7 +2910,7 @@ rllib = [
 [[package]]
 name = "real-gymnasium"
 version = "0.1.0"
-source = { editable = "../029_real_gymnasium" }
+source = { editable = "../703_gym_real" }
 dependencies = [
     { name = "gymnasium" },
     { name = "pyzmq" },

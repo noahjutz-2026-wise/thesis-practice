@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-import gymnasium
+import gymnasium as gym
 import mujoco
 import numpy as np
 import shapely
@@ -32,7 +32,7 @@ class LabyrinthEnv(MujocoEnv):
         visual_options: dict[int, bool] | None = None,
         random_starts: bool = True,
     ):
-        observation_space = gymnasium.spaces.Box(-1, 1, shape=(8,))
+        observation_space = gym.spaces.Box(0, 255, shape=(64, 64, 1), dtype=np.uint8)
         super().__init__(
             model_path,
             frame_skip,
@@ -135,11 +135,12 @@ class LabyrinthEnv(MujocoEnv):
         return self._get_obs()
 
     def _get_obs(self):
-        rx = self.data.sensor("sensor_board_rot_x").data
-        ry = self.data.sensor("sensor_board_rot_y").data
-        bp = self.data.sensor("sensor_ball_pos_wrt_board").data
-        bv = self.data.sensor("sensor_ball_vel_wrt_world").data
-        img = self._get_subimg().flatten()
+        # rx = self.data.sensor("sensor_board_rot_x").data
+        # ry = self.data.sensor("sensor_board_rot_y").data
+        # bp = self.data.sensor("sensor_ball_pos_wrt_board").data
+        # bv = self.data.sensor("sensor_ball_vel_wrt_world").data
+        img = self._get_subimg()
+        return img
 
         obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], self._dir_to_target(bp), img])
         return obs.astype(np.float32)

@@ -1,15 +1,12 @@
-import os
 from pathlib import Path
 
 from mujoco_gymnasium.labyrinth_env import LabyrinthEnv
-from ray.rllib.algorithms.algorithm import Algorithm
 from ray.rllib.algorithms.dreamerv3.dreamerv3 import DreamerV3Config
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.core.columns import Columns
 from ray.rllib.core.rl_module.rl_module import RLModule
 from ray.rllib.env.single_agent_episode import SingleAgentEpisode
 from ray.rllib.utils.spaces.space_utils import unbatch
-from ray.tune.registry import register_env
 
 MUJOCO_XML = Path(__file__).parents[3] / "704_backend_mujoco/export.xml"
 

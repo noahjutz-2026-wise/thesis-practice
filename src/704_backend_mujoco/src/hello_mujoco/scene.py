@@ -97,7 +97,7 @@ def scene() -> mujoco.MjSpec:
 
     ball.add_camera(
         name="ball_cam",
-        pos=[0.0, 0.0, 0.5],
+        pos=[0.0, 0.0, 0.075],
         mode=mujoco.mjtCamLight.mjCAMLIGHT_TRACK,
     )
 

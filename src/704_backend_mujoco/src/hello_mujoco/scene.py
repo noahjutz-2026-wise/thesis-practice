@@ -123,6 +123,13 @@ def scene() -> mujoco.MjSpec:
     )
 
     spec.add_sensor(
+        type=mujoco.mjtSensor.mjSENS_FRAMEANGVEL,
+        name="sensor_board_angvel",
+        objtype=mujoco.mjtObj.mjOBJ_XBODY,
+        objname="board",
+    )
+
+    spec.add_sensor(
         type=mujoco.mjtSensor.mjSENS_FRAMEPOS,
         name="sensor_ball_pos_wrt_world",
         objtype=mujoco.mjtObj.mjOBJ_XBODY,

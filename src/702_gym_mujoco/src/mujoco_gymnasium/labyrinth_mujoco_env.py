@@ -9,7 +9,7 @@ from gymnasium.envs.mujoco.mujoco_env import DEFAULT_SIZE, MujocoEnv
 from numpy.typing import NDArray
 from shapely.ops import substring
 
-WAYPOINTS_PATH = (
+LAYOUT_PATH = (
     Path(__file__).parents[3]
     / "706_maze_build123d/src/labyrinth_game_cad/layouts/cyberrunner_hard_layout.json"
 )
@@ -55,9 +55,9 @@ class LabyrinthMujocoEnv(MujocoEnv):
         self.random_starts = random_starts
         self.ix = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, "motor_x")
         self.iy = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_ACTUATOR, "motor_y")
-        with open(WAYPOINTS_PATH, "r") as f:
-            waypoints = json.load(f)["waypoints"]
-            self.waypoints = np.asarray(waypoints)
+        with open(LAYOUT_PATH, "r") as f:
+            layout = json.load(f)
+            self.waypoints = np.asarray(layout["waypoints"])
             self.line = shapely.geometry.LineString(self.waypoints)
 
         self.progress = 0

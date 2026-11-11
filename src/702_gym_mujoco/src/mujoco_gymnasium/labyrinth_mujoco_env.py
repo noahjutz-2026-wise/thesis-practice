@@ -14,7 +14,7 @@ WAYPOINTS_PATH = (
     / "706_maze_build123d/src/labyrinth_game_cad/layouts/cyberrunner_hard_layout.json"
 )
 
-WINDOW = 0.03  # normalized progress +/- used for reward subpath and highlight
+WINDOW = 0.01  # normalized progress +/- used for reward subpath and highlight
 
 
 class LabyrinthMujocoEnv(MujocoEnv):

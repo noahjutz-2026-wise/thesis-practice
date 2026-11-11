@@ -84,10 +84,10 @@ def main():
             callbacks=[WandbLoggerCallback(entity="tjno", project="crs2r_results")],
             stop={"num_env_steps_sampled_lifetime": 2_000_000},
             checkpoint_config=tune.CheckpointConfig(
-                num_to_keep=2, checkpoint_frequency=10, checkpoint_at_end=True
+                num_to_keep=3, checkpoint_frequency=75, checkpoint_at_end=False
             ),
         ),
-        param_space=dreamerv3_config().environment(sim_env()),
+        param_space=ppo_config().environment(sim_env()),
     )
 
     tuner.fit()

@@ -19,7 +19,7 @@ KEYS = {
 
 
 def main():
-    env = labyrinth_env.LabyrinthEnv(str(MUJOCO_XML), 3)
+    env = labyrinth_env.LabyrinthMujocoEnv(str(MUJOCO_XML), 3)
     env.reset()
     target = np.zeros(2)
     glfw.init()

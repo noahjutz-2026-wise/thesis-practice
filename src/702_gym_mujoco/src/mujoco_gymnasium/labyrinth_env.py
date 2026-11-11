@@ -17,7 +17,7 @@ WAYPOINTS_PATH = (
 WINDOW = 0.03  # normalized progress +/- used for reward subpath and highlight
 
 
-class LabyrinthEnv(MujocoEnv):
+class LabyrinthMujocoEnv(MujocoEnv):
     def __init__(
         self,
         model_path: str,

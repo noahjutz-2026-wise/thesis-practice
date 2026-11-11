@@ -32,7 +32,12 @@ class LabyrinthEnv(MujocoEnv):
         visual_options: dict[int, bool] | None = None,
         random_starts: bool = True,
     ):
-        observation_space = gym.spaces.Box(0, 255, shape=(64, 64, 3), dtype=np.float32)
+        observation_space = gym.spaces.Dict(
+            {
+                "subimg": gym.spaces.Box(0, 255, shape=(64, 64, 3), dtype=np.uint8),
+                "vec": gym.spaces.Box(-1, 1, shape=(8,), dtype=np.float32),
+            }
+        )
         super().__init__(
             model_path,
             frame_skip,
@@ -135,15 +140,14 @@ class LabyrinthEnv(MujocoEnv):
         return self._get_obs()
 
     def _get_obs(self):
-        # rx = self.data.sensor("sensor_board_rot_x").data
-        # ry = self.data.sensor("sensor_board_rot_y").data
-        # bp = self.data.sensor("sensor_ball_pos_wrt_board").data
-        # bv = self.data.sensor("sensor_ball_vel_wrt_world").data
-        img = self._get_subimg()
-        return img.astype(np.float32)
+        rx = self.data.sensor("sensor_board_rot_x").data
+        ry = self.data.sensor("sensor_board_rot_y").data
+        bp = self.data.sensor("sensor_ball_pos_wrt_board").data
+        bv = self.data.sensor("sensor_ball_vel_wrt_world").data
+        vec_obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], self._dir_to_target(bp)])
 
-        obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], self._dir_to_target(bp), img])
-        return obs.astype(np.float32)
+        img = self._get_subimg()
+        return {"subimg": img, "vec": vec_obs}
 
     def _get_subimg(self) -> NDArray[np.uint8]:
         self.track_renderer.update_scene(self.data, camera="ball_cam")

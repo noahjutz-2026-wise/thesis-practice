@@ -139,7 +139,7 @@ class LabyrinthMujocoEnv(MujocoEnv):
         self.set_state(qpos, qvel)
         return self._get_obs()
 
-    def _get_obs(self):
+    def _get_obs(self) -> gym.spaces.Dict:
         rx = self.data.sensor("sensor_board_rot_x").data
         ry = self.data.sensor("sensor_board_rot_y").data
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data

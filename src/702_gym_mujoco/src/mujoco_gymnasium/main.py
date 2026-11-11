@@ -4,13 +4,13 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-from mujoco_gymnasium import labyrinth_env
+from mujoco_gymnasium import labyrinth_mujoco_env
 
 MUJOCO_XML = Path(__file__).parents[3] / "704_backend_mujoco/export.xml"
 
 
 def main():
-    env = labyrinth_env.LabyrinthMujocoEnv(
+    env = labyrinth_mujoco_env.LabyrinthMujocoEnv(
         str(MUJOCO_XML), 3, render_mode="human", random_starts=True
     )
     print(env)

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from mujoco_gymnasium.labyrinth_env import LabyrinthEnv
+from mujoco_gymnasium.labyrinth_mujoco_env import LabyrinthMujocoEnv
 from ray import tune
 from ray.air.integrations.wandb import WandbLoggerCallback
 from ray.rllib.algorithms.algorithm import Algorithm
@@ -71,7 +71,7 @@ def sim_env():
     name = "labyrinth_game_real"
 
     def env(ctx):
-        return LabyrinthEnv(str(MUJOCO_XML), 3)
+        return LabyrinthMujocoEnv(str(MUJOCO_XML), 3)
 
     register_env(name, env)
     return name

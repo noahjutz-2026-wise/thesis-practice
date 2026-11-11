@@ -23,7 +23,8 @@ def main():
         cum += reward
         # print(cum)
 
-        img = obs[-(64 * 64) :].reshape(64, 64).astype(np.uint8)
+        img = obs[-(64 * 64 * 3) :].reshape(64, 64, 3).astype(np.uint8)
+        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
         cv2.imshow("f", img)
         cv2.waitKey(1)
 

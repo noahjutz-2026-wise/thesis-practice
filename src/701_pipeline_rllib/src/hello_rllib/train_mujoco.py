@@ -64,7 +64,9 @@ class CustomCallback(RLlibCallback):
         )
         termination_reasons = ["offpath", "fallen", "stall", "goal"]
         for reason, count in zip(termination_reasons, cond):
-            metrics_logger.log_value(("termination", reason), count, reduce="sum")
+            metrics_logger.log_value(
+                ("termination", reason), count, reduce="lifetime_sum"
+            )
 
 
 def _restore_checkpoint(*, algorithm: Algorithm, **kwargs):

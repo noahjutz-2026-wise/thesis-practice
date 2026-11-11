@@ -166,8 +166,7 @@ class LabyrinthMujocoEnv(MujocoEnv):
     ) -> NDArray[np.float64]:
         target = self.line.interpolate(min(1.0, self.progress + look), normalized=True)
         to_target = np.array([target.x, target.y]) - bp[:-1]
-        dist_t = np.linalg.norm(to_target)
-        return to_target / (dist_t + 1e-8)
+        return to_target
 
     def _render_human(self):
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data

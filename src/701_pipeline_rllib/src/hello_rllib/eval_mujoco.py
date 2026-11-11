@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from mujoco_gymnasium.labyrinth_env import LabyrinthEnv
+from mujoco_gymnasium.labyrinth_mujoco_env import LabyrinthMujocoEnv
+from mujoco_gymnasium.labyrinth_mujoco_env_wrappers import vec_obs_env
 from ray.rllib.algorithms.dreamerv3.dreamerv3 import DreamerV3Config
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.rllib.core.columns import Columns
@@ -21,13 +22,14 @@ CHECKPOINT_PATH = (
 
 def main():
     print(CHECKPOINT_PATH)
-    env = LabyrinthEnv(str(MUJOCO_XML), 3, render_mode="human")
+    env = LabyrinthMujocoEnv(str(MUJOCO_XML), 3, render_mode="human", use_subimg=False)
+    env = vec_obs_env(env)
     obs, _ = env.reset()
 
     ppo_config = PPOConfig()
     dreamerv3_config = DreamerV3Config()
 
-    config = dreamerv3_config
+    config = ppo_config
     rl_module = RLModule.from_checkpoint(str(CHECKPOINT_PATH.resolve()))
     env_to_module = config.build_env_to_module_connector(
         env=env, spaces=None, device=None

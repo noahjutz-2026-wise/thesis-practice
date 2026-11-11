@@ -72,7 +72,7 @@ def sim_env():
     name = "labyrinth_game_real"
 
     def env(ctx):
-        env = LabyrinthMujocoEnv(str(MUJOCO_XML), 3)
+        env = LabyrinthMujocoEnv(str(MUJOCO_XML), 3, use_subimg=False)
         return vec_obs_env(env)
 
     register_env(name, env)

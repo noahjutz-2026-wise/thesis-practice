@@ -31,6 +31,7 @@ class LabyrinthMujocoEnv(MujocoEnv):
         max_geom: int = 1000,
         visual_options: dict[int, bool] | None = None,
         random_starts: bool = True,
+        use_subimg: bool = True,
     ):
         observation_space = gym.spaces.Dict(
             {
@@ -64,9 +65,13 @@ class LabyrinthMujocoEnv(MujocoEnv):
         self.t = 0
         self.stall_idx = 0
         self.bp = np.zeros(())
-        cam_id = mujoco.mj_name2id(self.model, mujoco.mjtObj.mjOBJ_CAMERA, "ball_cam")
-        self.track_renderer = mujoco.Renderer(self.model, height=64, width=64)
-        self.buf = np.zeros((64, 64, 3), np.uint8)
+        self.use_subimg = use_subimg
+        if self.use_subimg:
+            cam_id = mujoco.mj_name2id(
+                self.model, mujoco.mjtObj.mjOBJ_CAMERA, "ball_cam"
+            )
+            self.track_renderer = mujoco.Renderer(self.model, height=64, width=64)
+            self.buf = np.zeros((64, 64, 3), np.uint8)
 
     def step(
         self, action: NDArray[np.float32]
@@ -151,12 +156,14 @@ class LabyrinthMujocoEnv(MujocoEnv):
         tvec4 = self._dir_to_target(bp, look=0.08)
         vec_obs = np.concatenate(
             [rx, ry, rvel[:-1], bp[:-1], bv[:-1], tvec1, tvec2, tvec3, tvec4]
-        )
+        ).astype(np.float32)
 
         img = self._get_subimg()
         return {"subimg": img, "vec": vec_obs}
 
     def _get_subimg(self) -> NDArray[np.uint8]:
+        if not self.use_subimg:
+            return np.zeros((64, 64, 3), np.uint8)
         self.track_renderer.update_scene(self.data, camera="ball_cam")
         self.track_renderer.render(out=self.buf)
         return self.buf

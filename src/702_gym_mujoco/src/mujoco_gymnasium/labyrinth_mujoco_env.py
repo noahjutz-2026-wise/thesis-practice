@@ -35,7 +35,7 @@ class LabyrinthMujocoEnv(MujocoEnv):
         observation_space = gym.spaces.Dict(
             {
                 "subimg": gym.spaces.Box(0, 255, shape=(64, 64, 3), dtype=np.uint8),
-                "vec": gym.spaces.Box(-1, 1, shape=(11,), dtype=np.float32),
+                "vec": gym.spaces.Box(-1, 1, shape=(16,), dtype=np.float32),
             }
         )
         super().__init__(
@@ -145,8 +145,12 @@ class LabyrinthMujocoEnv(MujocoEnv):
         rvel = self.data.sensor("sensor_board_angvel").data
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data
         bv = self.data.sensor("sensor_ball_vel_wrt_world").data
+        tvec1 = self._dir_to_target(bp, look=0.01)
+        tvec2 = self._dir_to_target(bp, look=0.02)
+        tvec3 = self._dir_to_target(bp, look=0.04)
+        tvec4 = self._dir_to_target(bp, look=0.08)
         vec_obs = np.concatenate(
-            [rx, ry, rvel, bp[:-1], bv[:-1], self._dir_to_target(bp)]
+            [rx, ry, rvel[:-1], bp[:-1], bv[:-1], tvec1, tvec2, tvec3, tvec4]
         )
 
         img = self._get_subimg()
@@ -157,8 +161,9 @@ class LabyrinthMujocoEnv(MujocoEnv):
         self.track_renderer.render(out=self.buf)
         return self.buf
 
-    def _dir_to_target(self, bp: NDArray[np.float64]) -> NDArray[np.float64]:
-        look = 0.02
+    def _dir_to_target(
+        self, bp: NDArray[np.float64], look: float = 0.02
+    ) -> NDArray[np.float64]:
         target = self.line.interpolate(min(1.0, self.progress + look), normalized=True)
         to_target = np.array([target.x, target.y]) - bp[:-1]
         dist_t = np.linalg.norm(to_target)

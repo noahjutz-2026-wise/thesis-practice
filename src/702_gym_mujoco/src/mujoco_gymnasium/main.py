@@ -13,7 +13,7 @@ def main():
     env = labyrinth_mujoco_env.LabyrinthMujocoEnv(
         str(MUJOCO_XML), 3, render_mode="human", random_starts=False
     )
-    env = labyrinth_mujoco_env_wrappers.img_obs_env(env)
+    env = labyrinth_mujoco_env_wrappers.vec_obs_env(env)
     print(env.observation_space)
     env.reset()
 
@@ -23,11 +23,6 @@ def main():
         obs, reward, terminated, truncated, info = env.step(action)
         cum += reward
         # print(cum)
-
-        img = obs.reshape(64, 64, 3).astype(np.uint8)
-        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-        cv2.imshow("f", img)
-        cv2.waitKey(1)
 
         if terminated or truncated:
             obs, info = env.reset()

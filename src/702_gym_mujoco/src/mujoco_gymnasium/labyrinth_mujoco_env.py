@@ -35,7 +35,7 @@ class LabyrinthMujocoEnv(MujocoEnv):
         observation_space = gym.spaces.Dict(
             {
                 "subimg": gym.spaces.Box(0, 255, shape=(64, 64, 3), dtype=np.uint8),
-                "vec": gym.spaces.Box(-1, 1, shape=(8,), dtype=np.float32),
+                "vec": gym.spaces.Box(-1, 1, shape=(11,), dtype=np.float32),
             }
         )
         super().__init__(
@@ -72,8 +72,8 @@ class LabyrinthMujocoEnv(MujocoEnv):
         self, action: NDArray[np.float32]
     ) -> tuple[NDArray[np.float64], np.float64, bool, bool, dict[str, np.float64]]:
         ctrl = np.zeros(self.model.nu)
-        ctrl[self.ix] = action[0]
-        ctrl[self.iy] = action[1]
+        ctrl[self.ix] = 1  # action[0]
+        ctrl[self.iy] = 1  # action[1]
         self.do_simulation(ctrl, self.frame_skip)
 
         obs = self._get_obs()
@@ -142,9 +142,12 @@ class LabyrinthMujocoEnv(MujocoEnv):
     def _get_obs(self) -> gym.spaces.Dict:
         rx = self.data.sensor("sensor_board_rot_x").data
         ry = self.data.sensor("sensor_board_rot_y").data
+        rvel = self.data.sensor("sensor_board_angvel").data
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data
         bv = self.data.sensor("sensor_ball_vel_wrt_world").data
-        vec_obs = np.concatenate([rx, ry, bp[:-1], bv[:-1], self._dir_to_target(bp)])
+        vec_obs = np.concatenate(
+            [rx, ry, rvel, bp[:-1], bv[:-1], self._dir_to_target(bp)]
+        )
 
         img = self._get_subimg()
         return {"subimg": img, "vec": vec_obs}

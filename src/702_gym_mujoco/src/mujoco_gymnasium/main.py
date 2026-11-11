@@ -11,7 +11,7 @@ MUJOCO_XML = Path(__file__).parents[3] / "704_backend_mujoco/export.xml"
 
 def main():
     env = labyrinth_mujoco_env.LabyrinthMujocoEnv(
-        str(MUJOCO_XML), 3, render_mode="human", random_starts=True
+        str(MUJOCO_XML), 3, render_mode="human", random_starts=False
     )
     env = labyrinth_mujoco_env_wrappers.img_obs_env(env)
     print(env.observation_space)

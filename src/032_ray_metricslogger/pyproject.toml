@@ -5,7 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.13,<3.15"
-dependencies = ["ray[rllib]>=2.60.0"]
+dependencies = [
+    "ray[rllib]>=2.60.0",
+    "torch>=2.15.0",
+]
 
 [project.scripts]
 ray-met = "ray_metricslogger.main:main"

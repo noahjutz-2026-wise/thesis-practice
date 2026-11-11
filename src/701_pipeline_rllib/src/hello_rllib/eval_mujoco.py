@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import numpy as np
 from mujoco_gymnasium.labyrinth_mujoco_env import LabyrinthMujocoEnv
 from mujoco_gymnasium.labyrinth_mujoco_env_wrappers import vec_obs_env
 from ray.rllib.algorithms.dreamerv3.dreamerv3 import DreamerV3Config
@@ -43,7 +44,7 @@ def main():
 
         terminated = False
         truncated = False
-        ret = 0
+        ret = 0.0
         while not (terminated or truncated):
             shared_data = {}
             batch = env_to_module(
@@ -65,8 +66,8 @@ def main():
             action = unbatch(action_batch)[0]
             # print(action)
             observation, reward, terminated, truncated, info = env.step(action)
-            ret += reward
-            # print(ret)
+            ret += np.float32(reward)
+            print(ret)
             episode.add_env_step(
                 observation,
                 action,

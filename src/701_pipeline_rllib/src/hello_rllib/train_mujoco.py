@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from mujoco_gymnasium.labyrinth_mujoco_env import LabyrinthMujocoEnv
+from mujoco_gymnasium.labyrinth_mujoco_env_wrappers import vec_obs_env
 from ray import tune
 from ray.air.integrations.wandb import WandbLoggerCallback
 from ray.rllib.algorithms.algorithm import Algorithm
@@ -71,7 +72,8 @@ def sim_env():
     name = "labyrinth_game_real"
 
     def env(ctx):
-        return LabyrinthMujocoEnv(str(MUJOCO_XML), 3)
+        env = LabyrinthMujocoEnv(str(MUJOCO_XML), 3)
+        return vec_obs_env(env)
 
     register_env(name, env)
     return name
@@ -79,7 +81,7 @@ def sim_env():
 
 def main():
     tuner = tune.Tuner(
-        "DreamerV3",
+        "PPO",
         run_config=tune.RunConfig(
             callbacks=[WandbLoggerCallback(entity="tjno", project="crs2r_results")],
             stop={"num_env_steps_sampled_lifetime": 2_000_000},

@@ -72,8 +72,8 @@ class LabyrinthMujocoEnv(MujocoEnv):
         self, action: NDArray[np.float32]
     ) -> tuple[NDArray[np.float64], np.float64, bool, bool, dict[str, np.float64]]:
         ctrl = np.zeros(self.model.nu)
-        ctrl[self.ix] = 1  # action[0]
-        ctrl[self.iy] = 1  # action[1]
+        ctrl[self.ix] = action[0]
+        ctrl[self.iy] = action[1]
         self.do_simulation(ctrl, self.frame_skip)
 
         obs = self._get_obs()
@@ -171,13 +171,25 @@ class LabyrinthMujocoEnv(MujocoEnv):
 
     def _render_human(self):
         bp = self.data.sensor("sensor_ball_pos_wrt_board").data
-        dir_t = self._dir_to_target(bp)
 
         viewer = self.mujoco_renderer._get_viewer(self.render_mode)
         viewer.make_context_current()
-        quat, mat = np.zeros(4), np.zeros(9)
-        mujoco.mju_quatZ2Vec(quat, np.array([dir_t[0], dir_t[1], 0.0]))
-        mujoco.mju_quat2Mat(mat, quat)
+
+        arrows = []
+        for i, look in enumerate([0.01, 0.02, 0.04, 0.08]):
+            dir_t = self._dir_to_target(bp, look=look)
+            quat, mat = np.zeros(4), np.zeros(9)
+            mujoco.mju_quatZ2Vec(quat, np.array([dir_t[0], dir_t[1], 0.0]))
+            mujoco.mju_quat2Mat(mat, quat)
+            arrows.append(
+                {
+                    "type": mujoco.mjtGeom.mjGEOM_ARROW,
+                    "size": np.array([0.002, 0.002, 0.03]),
+                    "pos": self.data.body("ball").xpos + [0, 0, 0.02 * (i + 1)],
+                    "mat": mat,
+                    "rgba": np.array([1.0, 0.0, 0.0, 1.0], dtype=np.float32),
+                }
+            )
 
         point = self.line.interpolate(self.progress, normalized=True)
 
@@ -225,13 +237,7 @@ class LabyrinthMujocoEnv(MujocoEnv):
             if hi < t1:
                 cyl(f(hi), b, blue)
         markers += [
-            {
-                "type": mujoco.mjtGeom.mjGEOM_ARROW,
-                "size": np.array([0.002, 0.002, 0.03]),
-                "pos": self.data.body("ball").xpos + [0, 0, 0.02],
-                "mat": mat,  # flat, shape (9,)
-                "rgba": np.array([1.0, 0.0, 0.0, 1.0], dtype=np.float32),
-            },
+            *arrows,
             {
                 "type": mujoco.mjtGeom.mjGEOM_SPHERE,
                 "size": np.array([0.005, 0.0, 0.0]),

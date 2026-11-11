@@ -61,21 +61,23 @@ def dreamerv3_config():
 def real_env():
     name = "labyrinth_game_real"
 
-    def env(ctx):
+    def getenv(ctx):
         return LabyrinthRealEnv()
 
-    register_env(name, env)
+    register_env(name, getenv)
     return name
 
 
 def sim_env():
     name = "labyrinth_game_real"
 
-    def env(ctx):
-        env = LabyrinthMujocoEnv(str(MUJOCO_XML), 3, use_subimg=False)
+    def getenv(ctx):
+        env = LabyrinthMujocoEnv(
+            str(MUJOCO_XML), 3, use_subimg=False, random_starts=False
+        )
         return vec_obs_env(env)
 
-    register_env(name, env)
+    register_env(name, getenv)
     return name
 
 

@@ -110,7 +110,7 @@ class LabyrinthMujocoEnv(MujocoEnv):
         terminated = bool(np.any(cond))
 
         truncated = self.t >= 1000
-        info = {}  # TODO
+        info = {"termination_reason": cond}
         if self.render_mode == "human":
             self._render_human()
         self.t += 1

@@ -40,11 +40,12 @@ def main():
     pubs = []
 
     for i in range(50):
-        sub = ctx.socket(zmq.SUB)
-        sub.setsockopt(zmq.SUBSCRIBE, b"")
-        # sub.setsockopt(zmq.CONFLATE, 1)
-        sub.connect("inproc://xpub")
-        subs.append(sub)
+        if i == 0:
+            sub = ctx.socket(zmq.SUB)
+            sub.setsockopt(zmq.SUBSCRIBE, b"")
+            sub.setsockopt(zmq.CONFLATE, 1)
+            sub.connect("inproc://xpub")
+            subs.append(sub)
 
         pub = ctx.socket(zmq.PUB)
         pub.connect("inproc://xsub")

@@ -15,7 +15,6 @@ def main():
     if not cap.isOpened():
         sys.exit(1)
 
-    prev = None
     for i in itertools.count():
         if i == 1000:
             break
@@ -24,7 +23,6 @@ def main():
             print("frame error")
             sys.exit(2)
 
-        t = cap.get(cv2.CAP_PROP_POS_MSEC)
-        if prev is not None:
-            print(t - prev)
-        prev = t
+        t_c = cap.get(cv2.CAP_PROP_POS_MSEC) / 1000
+        t_p = time.monotonic()
+        print(t_p - t_c)

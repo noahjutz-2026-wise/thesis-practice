@@ -3,14 +3,12 @@ name = "dvc-data-prep"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }
-]
+authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = ["numpy>=2.5.4", "pandas>=3.1.1", "pyarrow>=26.0.1"]
 
 [project.scripts]
-dvc-data-prep = "dvc_data_prep:main"
+record = "dvc_data_prep.record_pq:main"
 
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14.0"]

@@ -34,7 +34,9 @@ def main():
     ctx = zmq.Context.instance()
 
     xsub = ctx.socket(zmq.XSUB)
+    xsub.setsockopt(zmq.RCVHWM, 1)
     xpub = ctx.socket(zmq.XPUB)
+    xpub.setsockopt(zmq.SNDHWM, 1)
     xpub.bind("inproc://xpub")
     xsub.bind("inproc://xsub")
 

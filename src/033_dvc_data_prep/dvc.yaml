@@ -1,0 +1,3 @@
+stages:
+  print:
+    cmd: uv run read-pq

@@ -1,0 +1,4 @@
+schema: '2.0'
+stages:
+  print:
+    cmd: uv run read-pq

@@ -9,15 +9,15 @@ import zmq
 def subscriber(sub):
     print("sub")
     while True:
-        x = sub.recv_pyobj()
-        print(datetime.fromtimestamp(x).strftime("%H:%M:%S:%f")[:-3])
+        id, t = sub.recv_pyobj()
+        print(id, datetime.fromtimestamp(t).strftime("%H:%M:%S:%f")[:-3])
         time.sleep(1)
 
 
-def publisher(pub):
-    print("pub")
+def time_publisher(pub, id=-1):
+    print("pub time")
     for i in itertools.count():
-        pub.send_pyobj(time.time())
+        pub.send_pyobj([id, time.time()])
 
 
 def run_proxy(xsub, xpub):
@@ -26,23 +26,30 @@ def run_proxy(xsub, xpub):
 
 def main():
     ctx = zmq.Context.instance()
-    with (
-        ctx.socket(zmq.SUB) as sub,
-        ctx.socket(zmq.PUB) as pub,
-        ctx.socket(zmq.XSUB) as xsub,
-        ctx.socket(zmq.XPUB) as xpub,
-    ):
-        xpub.bind("inproc://xpub")
-        xsub.bind("inproc://xsub")
 
+    xsub = ctx.socket(zmq.XSUB)
+    xpub = ctx.socket(zmq.XPUB)
+    xpub.bind("inproc://xpub")
+    xsub.bind("inproc://xsub")
+
+    subs = []
+    pubs = []
+
+    for i in range(50):
+        sub = ctx.socket(zmq.SUB)
         sub.setsockopt(zmq.SUBSCRIBE, b"")
         sub.setsockopt(zmq.CONFLATE, 1)
-        # pub.setsockopt(zmq.CONFLATE, 1)
-
-        pub.connect("inproc://xsub")
         sub.connect("inproc://xpub")
+        subs.append(sub)
 
-        threading.Thread(target=run_proxy, args=(xsub, xpub)).start()
-        threading.Thread(target=subscriber, args=(sub,)).start()
+        pub = ctx.socket(zmq.PUB)
+        pub.connect("inproc://xsub")
+        pubs.append(pub)
 
-        publisher(pub)
+    threading.Thread(target=run_proxy, args=(xsub, xpub)).start()
+    for i, pub in enumerate(pubs[1:]):
+        threading.Thread(target=time_publisher, args=(pub,), kwargs={"id": i}).start()
+
+    threading.Thread(target=time_publisher, args=(pubs[0],)).start()
+
+    subscriber(subs[0])

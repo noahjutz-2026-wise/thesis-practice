@@ -32,9 +32,7 @@ def main():
     ctx = zmq.Context.instance()
 
     xsub = ctx.socket(zmq.XSUB)
-    xsub.setsockopt(zmq.RCVHWM, 1)
     xpub = ctx.socket(zmq.XPUB)
-    xpub.setsockopt(zmq.SNDHWM, 1)
     xpub.bind("inproc://xpub")
     xsub.bind("inproc://xsub")
 
@@ -45,12 +43,10 @@ def main():
         sub = ctx.socket(zmq.SUB)
         sub.setsockopt(zmq.SUBSCRIBE, b"")
         # sub.setsockopt(zmq.CONFLATE, 1)
-        sub.setsockopt(zmq.RCVHWM, 1)
         sub.connect("inproc://xpub")
         subs.append(sub)
 
         pub = ctx.socket(zmq.PUB)
-        pub.setsockopt(zmq.SNDHWM, 1)
         pub.connect("inproc://xsub")
         pubs.append(pub)
 

@@ -13,7 +13,7 @@ dependencies = [
 ]
 
 [project.scripts]
-record = "dvc_data_prep.record_pq:main"
+record-pq = "dvc_data_prep.record_pq:main"
 read-pq = "dvc_data_prep.read_pq:main"
 
 [build-system]

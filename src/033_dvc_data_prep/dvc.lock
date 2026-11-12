@@ -2,3 +2,10 @@ schema: '2.0'
 stages:
   print:
     cmd: uv run read-pq
+  make-csv:
+    cmd: uv run process-pq
+    outs:
+    - path: out.csv
+      hash: md5
+      md5: b2c12dea41b260b3efba05097d556a4b
+      size: 2391

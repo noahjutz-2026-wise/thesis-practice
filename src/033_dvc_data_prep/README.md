@@ -2,13 +2,15 @@
 
 ## Quickstart
 
+Fetching raw data: (not yet implemented)
+
 ```bash
-dvc update -R . # to get out.pq from zenodo
+dvc update -R . # fetch from zenodo via HTTP
 ```
 
-## Supporting scripts
+Processing data:
 
 ```bash
-uv run record-pq # to generate out.pq from camera
-uv run read-pq # read to pandas, pyarrow or numpy
+uv run python -m dvc_data_prep.cam_latency.generate # out.pq
+uv run python -m dvc_data_prep.cam_latency.process # out.csv
 ```

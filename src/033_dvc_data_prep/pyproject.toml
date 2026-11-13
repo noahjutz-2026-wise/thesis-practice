@@ -13,9 +13,6 @@ dependencies = [
 ]
 
 [project.scripts]
-record-pq = "dvc_data_prep.record_pq:main"
-read-pq = "dvc_data_prep.read_pq:main"
-process-pq = "dvc_data_prep.process_pq:main"
 
 [build-system]
 requires = ["uv_build>=0.13.7,<0.14.0"]

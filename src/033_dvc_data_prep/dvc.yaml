@@ -1,9 +1,7 @@
 stages:
-  print:
-    cmd: uv run read-pq
-  make-csv:
+  cam_latency:
+    cmd: uv run python -m dvc_data_prep.cam_latency.process
     deps:
       - ins/cam_latency.pq
-    cmd: uv run process-pq
     outs:
       - outs/cam_latency.csv

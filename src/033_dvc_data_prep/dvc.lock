@@ -9,3 +9,15 @@ stages:
       hash: md5
       md5: b2c12dea41b260b3efba05097d556a4b
       size: 2391
+  cam_latency:
+    cmd: uv run python -m dvc_data_prep.cam_latency.process
+    deps:
+    - path: ins/cam_latency.pq
+      hash: md5
+      md5: 44d0f2633f47b43cfd0ddbd9aab4449f
+      size: 1243
+    outs:
+    - path: outs/cam_latency.csv
+      hash: md5
+      md5: 162284def12b99ba633346fca81e3e37
+      size: 2100

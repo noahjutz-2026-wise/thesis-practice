@@ -16,7 +16,7 @@ def subscriber(sub):
                 out.append((id, i))
             except zmq.Again:
                 break
-        print(out)
+        print(len(out))
         time.sleep(1)
 
 
@@ -31,7 +31,7 @@ def num_publisher(pub, id=-1):
     print("pub num")
     for i in itertools.count():
         pub.send_pyobj([id, i])
-        time.sleep(0.0001)
+        # time.sleep(0.0001)
 
 
 def run_proxy(xsub, xpub):
@@ -42,7 +42,7 @@ def main():
     ctx = zmq.Context.instance()
 
     xsub = ctx.socket(zmq.XSUB)
-    xsub.setsockopt(zmq.RCVHWM, 1)
+    # xsub.setsockopt(zmq.RCVHWM, 1)
     xpub = ctx.socket(zmq.XPUB)
     xpub.setsockopt(zmq.SNDHWM, 1)
     xpub.bind("inproc://xpub")
@@ -56,9 +56,9 @@ def main():
 
     pubs = []
 
-    for i in range(1):
+    for i in range(100):
         pub = ctx.socket(zmq.PUB)
-        pub.setsockopt(zmq.SNDHWM, 1)
+        # pub.setsockopt(zmq.SNDHWM, 1)
         pub.connect("inproc://xsub")
         pubs.append(pub)
 

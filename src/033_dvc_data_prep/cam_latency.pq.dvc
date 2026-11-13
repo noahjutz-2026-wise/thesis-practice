@@ -1,4 +1,4 @@
-md5: f806f4e20e8465a25c9fd84c07ef937a
+md5: f8a7133e372b054795ae6175ce1abcf8
 frozen: true
 deps:
 - checksum: '250551021802914545033232644033661741822'
@@ -9,4 +9,4 @@ outs:
 - md5: 44d0f2633f47b43cfd0ddbd9aab4449f
   size: 1243
   hash: md5
-  path: out.pq
+  path: cam_latency.pq

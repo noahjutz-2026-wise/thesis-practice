@@ -18,14 +18,16 @@ def len_subscriber(sub):
     print("len sub")
     while True:
         outs = []
+        t0 = time.time()
         while True:
             try:
                 r = sub.recv_pyobj(zmq.EAGAIN)
                 outs.append(r)
             except zmq.Again:
                 break
-        yield len(outs)
-        time.sleep(1)
+        t1 = time.time()
+        yield t1 - t0, len(outs)
+        time.sleep(0.01)
 
 
 def delay_subscriber(sub):
@@ -94,8 +96,8 @@ def main():
             target=time_publisher, args=(pub,), kwargs={"id": i}, daemon=True
         ).start()
 
-    for length in itertools.islice(len_subscriber(sub), 2):
-        print(length)
+    for d, l in itertools.islice(len_subscriber(sub), 1000):
+        print(f"{d:05.2f}", l)
 
 
 if __name__ == "__main__":

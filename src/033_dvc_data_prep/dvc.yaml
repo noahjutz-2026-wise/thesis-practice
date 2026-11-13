@@ -2,6 +2,8 @@ stages:
   print:
     cmd: uv run read-pq
   make-csv:
+    deps:
+      - ins/cam_latency.pq
     cmd: uv run process-pq
     outs:
-      - out.csv
+      - outs/cam_latency.csv

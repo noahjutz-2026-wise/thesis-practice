@@ -8,7 +8,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 
 VIDEO_CAP_PATH = "/dev/v4l/by-id/usb-e-con_systems_See3CAM_24CUG_2509460D-video-index0"
-PQ_PATH = Path(__file__).parents[2] / "out.pq"
+PQ_PATH = Path(__file__).parents[3] / "cam_latency.pq"
 
 
 def main():

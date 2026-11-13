@@ -21,7 +21,7 @@ def len_subscriber(sub):
         outs = []
         while True:
             try:
-                r = sub.recv_pyobj()
+                r = sub.recv_pyobj(zmq.EAGAIN)
                 outs.append(r)
             except zmq.Again:
                 break

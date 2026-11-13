@@ -1,7 +1,6 @@
 import itertools
 import threading
 import time
-from datetime import datetime
 
 import zmq
 
@@ -10,12 +9,8 @@ def subscriber(sub):
     print("sub")
     while True:
         id, t = sub.recv_pyobj()
-        print(id, datetime.fromtimestamp(t).strftime("%H:%M:%S:%f")[:-3])
-        while True:
-            try:
-                _ = sub.recv(zmq.NOBLOCK)
-            except zmq.Again:
-                break
+        t2 = time.time()
+        print(id, t2 - t)
         time.sleep(1)
 
 
@@ -40,30 +35,25 @@ def main():
     xpub.bind("inproc://xpub")
     xsub.bind("inproc://xsub")
 
-    subs = []
+    sub = ctx.socket(zmq.SUB)
+    sub.setsockopt(zmq.SUBSCRIBE, b"")
+    # sub.setsockopt(zmq.CONFLATE, 1)
+    sub.setsockopt(zmq.RCVHWM, 1)
+    sub.connect("inproc://xpub")
+
     pubs = []
 
     for i in range(50):
-        if i == 0:
-            sub = ctx.socket(zmq.SUB)
-            sub.setsockopt(zmq.SUBSCRIBE, b"")
-            # sub.setsockopt(zmq.CONFLATE, 1)
-            sub.setsockopt(zmq.RCVHWM, 1)
-            sub.connect("inproc://xpub")
-            subs.append(sub)
-
         pub = ctx.socket(zmq.PUB)
         pub.setsockopt(zmq.SNDHWM, 1)
         pub.connect("inproc://xsub")
         pubs.append(pub)
 
     threading.Thread(target=run_proxy, args=(xsub, xpub)).start()
-    for i, pub in enumerate(pubs[1:]):
+    for i, pub in enumerate(pubs):
         threading.Thread(target=time_publisher, args=(pub,), kwargs={"id": i}).start()
 
-    threading.Thread(target=time_publisher, args=(pubs[0],)).start()
-
-    subscriber(subs[0])
+    subscriber(sub)
 
 
 if __name__ == "__main__":

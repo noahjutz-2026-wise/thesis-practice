@@ -5,11 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.13"
-dependencies = [
-    "matplotlib>=3.11.2",
-    "numpy>=2.5.4",
-    "pyzmq>=27.3.0",
-]
+dependencies = ["pyzmq>=27.3.0"]
 
 [project.scripts]
 zmqrt = "zmq_realtime.main:main"

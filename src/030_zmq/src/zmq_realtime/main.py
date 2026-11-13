@@ -1,7 +1,6 @@
 import itertools
 import threading
 import time
-from datetime import datetime
 
 import zmq
 
@@ -88,11 +87,14 @@ def main():
         pub.connect(XSUB_ADDR)
         pubs.append(pub)
 
-    threading.Thread(target=run_proxy, args=(xsub, xpub)).start()
+    t_proxy = threading.Thread(target=run_proxy, args=(xsub, xpub), daemon=True)
+    t_proxy.start()
     for i, pub in enumerate(pubs):
-        threading.Thread(target=time_publisher, args=(pub,), kwargs={"id": i}).start()
+        threading.Thread(
+            target=time_publisher, args=(pub,), kwargs={"id": i}, daemon=True
+        ).start()
 
-    for length in len_subscriber(sub):
+    for length in itertools.islice(len_subscriber(sub), 2):
         print(length)
 
 

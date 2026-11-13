@@ -5,8 +5,8 @@ from datetime import datetime
 
 import zmq
 
-XPUB_ADDR = "inproc://xpub"
-XSUB_ADDR = "inproc://xsub"
+XPUB_ADDR = "ipc://ipc_xpub"
+XSUB_ADDR = "ipc://ipc_xsub"
 
 
 def time_subscriber(sub):

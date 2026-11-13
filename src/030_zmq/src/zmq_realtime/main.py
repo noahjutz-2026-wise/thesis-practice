@@ -5,8 +5,14 @@ from datetime import datetime
 
 import zmq
 
-XPUB_ADDR = "ipc://ipc_xpub"
-XSUB_ADDR = "ipc://ipc_xsub"
+XPUB_ADDR_INPROC = "inproc://xpub"
+XSUB_ADDR_INPROC = "inproc://xsub"
+
+XPUB_ADDR_IPC = "ipc://ipc_xpub"
+XSUB_ADDR_IPC = "ipc://ipc_xsub"
+
+XPUB_ADDR = XPUB_ADDR_INPROC
+XSUB_ADDR = XSUB_ADDR_INPROC
 
 
 def len_subscriber(sub):

@@ -10,8 +10,11 @@ XSUB_ADDR_INPROC = "inproc://xsub"
 XPUB_ADDR_IPC = "ipc://ipc_xpub"
 XSUB_ADDR_IPC = "ipc://ipc_xsub"
 
-XPUB_ADDR = XPUB_ADDR_IPC
-XSUB_ADDR = XSUB_ADDR_IPC
+XPUB_ADDR_TCP = "tcp://127.0.0.1:5556"
+XSUB_ADDR_TCP = "tcp://127.0.0.1:5555"
+
+XPUB_ADDR = XPUB_ADDR_TCP
+XSUB_ADDR = XSUB_ADDR_TCP
 
 
 def len_subscriber(sub):

@@ -9,6 +9,20 @@ XPUB_ADDR = "ipc://ipc_xpub"
 XSUB_ADDR = "ipc://ipc_xsub"
 
 
+def len_subscriber(sub):
+    print("len sub")
+    while True:
+        outs = []
+        while True:
+            try:
+                r = sub.recv_pyobj()
+                outs.append(r)
+            except zmq.Again:
+                break
+        print(len(outs))
+        time.sleep(1)
+
+
 def time_subscriber(sub):
     print("time sub")
     while True:
@@ -72,7 +86,7 @@ def main():
     for i, pub in enumerate(pubs):
         threading.Thread(target=time_publisher, args=(pub,), kwargs={"id": i}).start()
 
-    time_subscriber(sub)
+    len_subscriber(sub)
 
 
 if __name__ == "__main__":

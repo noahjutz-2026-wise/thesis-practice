@@ -11,8 +11,8 @@ XSUB_ADDR_INPROC = "inproc://xsub"
 XPUB_ADDR_IPC = "ipc://ipc_xpub"
 XSUB_ADDR_IPC = "ipc://ipc_xsub"
 
-XPUB_ADDR = XPUB_ADDR_INPROC
-XSUB_ADDR = XSUB_ADDR_INPROC
+XPUB_ADDR = XPUB_ADDR_IPC
+XSUB_ADDR = XSUB_ADDR_IPC
 
 
 def len_subscriber(sub):

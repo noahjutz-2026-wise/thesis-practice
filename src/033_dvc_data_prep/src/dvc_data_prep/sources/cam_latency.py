@@ -33,3 +33,7 @@ def main():
 
     tbl = pa.table({"value": delays})
     pq.write_table(tbl, PQ_PATH)
+
+
+if __name__ == "__main__":
+    main()

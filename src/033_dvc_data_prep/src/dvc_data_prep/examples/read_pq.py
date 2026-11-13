@@ -18,3 +18,7 @@ def main():
     print("using pyarrow.parquet")
     tbl = pq.read_table(PQ_PATH)
     print(tbl)
+
+
+if __name__ == "__main__":
+    main()

@@ -5,6 +5,9 @@ from datetime import datetime
 
 import zmq
 
+XPUB_ADDR = "inproc://xpub"
+XSUB_ADDR = "inproc://xsub"
+
 
 def time_subscriber(sub):
     print("time sub")
@@ -48,21 +51,21 @@ def main():
     # xsub.setsockopt(zmq.RCVHWM, 1)
     xpub = ctx.socket(zmq.XPUB)
     xpub.setsockopt(zmq.SNDHWM, 1)
-    xpub.bind("inproc://xpub")
-    xsub.bind("inproc://xsub")
+    xpub.bind(XPUB_ADDR)
+    xsub.bind(XSUB_ADDR)
 
     sub = ctx.socket(zmq.SUB)
     sub.setsockopt(zmq.SUBSCRIBE, b"")
     # sub.setsockopt(zmq.CONFLATE, 1)
     sub.setsockopt(zmq.RCVHWM, 1)
-    sub.connect("inproc://xpub")
+    sub.connect(XPUB_ADDR)
 
     pubs = []
 
     for i in range(100):
         pub = ctx.socket(zmq.PUB)
         # pub.setsockopt(zmq.SNDHWM, 1)
-        pub.connect("inproc://xsub")
+        pub.connect(XSUB_ADDR)
         pubs.append(pub)
 
     threading.Thread(target=run_proxy, args=(xsub, xpub)).start()

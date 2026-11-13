@@ -1,6 +1,4 @@
-import numpy as np
 import pandas as pd
-import pyarrow as pa
 from pyarrow import parquet as pq
 
 from dvc_data_prep.processors.cam_latency import PQ_PATH

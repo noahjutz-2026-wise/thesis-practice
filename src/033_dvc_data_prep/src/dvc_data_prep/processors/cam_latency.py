@@ -1,10 +1,7 @@
 import os
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
-import pyarrow as pa
-from pyarrow import parquet as pq
 
 from dvc_data_prep.sources.cam_latency import PQ_PATH
 

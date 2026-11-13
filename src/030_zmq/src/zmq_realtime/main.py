@@ -25,16 +25,16 @@ def len_subscriber(sub):
                 outs.append(r)
             except zmq.Again:
                 break
-        print(len(outs))
+        yield len(outs)
         time.sleep(1)
 
 
-def time_subscriber(sub):
+def delay_subscriber(sub):
     print("time sub")
     while True:
         id, t = sub.recv_pyobj()
         t2 = time.time()
-        print(id, t2 - t)
+        yield id, t2 - t
         time.sleep(1)
 
 
@@ -42,7 +42,7 @@ def num_subscriber(sub):
     print("num sub")
     while True:
         id, i = sub.recv_pyobj()
-        print(id, i)
+        yield id, i
         time.sleep(1)
 
 
@@ -92,7 +92,8 @@ def main():
     for i, pub in enumerate(pubs):
         threading.Thread(target=time_publisher, args=(pub,), kwargs={"id": i}).start()
 
-    len_subscriber(sub)
+    for length in len_subscriber(sub):
+        print(length)
 
 
 if __name__ == "__main__":

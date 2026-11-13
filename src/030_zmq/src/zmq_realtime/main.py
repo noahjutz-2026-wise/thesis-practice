@@ -8,9 +8,15 @@ import zmq
 def subscriber(sub):
     print("sub")
     while True:
-        id, t = sub.recv_pyobj()
-        t2 = time.time()
-        print(id, t2 - t)
+        print("===")
+        out = []
+        while True:
+            try:
+                id, i = sub.recv_pyobj(zmq.NOBLOCK)
+                out.append((id, i))
+            except zmq.Again:
+                break
+        print(out)
         time.sleep(1)
 
 
@@ -18,6 +24,13 @@ def time_publisher(pub, id=-1):
     print("pub time")
     for i in itertools.count():
         pub.send_pyobj([id, time.time()])
+        time.sleep(0.0001)
+
+
+def num_publisher(pub, id=-1):
+    print("pub num")
+    for i in itertools.count():
+        pub.send_pyobj([id, i])
         time.sleep(0.0001)
 
 
@@ -43,7 +56,7 @@ def main():
 
     pubs = []
 
-    for i in range(50):
+    for i in range(1):
         pub = ctx.socket(zmq.PUB)
         pub.setsockopt(zmq.SNDHWM, 1)
         pub.connect("inproc://xsub")
@@ -51,7 +64,7 @@ def main():
 
     threading.Thread(target=run_proxy, args=(xsub, xpub)).start()
     for i, pub in enumerate(pubs):
-        threading.Thread(target=time_publisher, args=(pub,), kwargs={"id": i}).start()
+        threading.Thread(target=num_publisher, args=(pub,), kwargs={"id": i}).start()
 
     subscriber(sub)
 

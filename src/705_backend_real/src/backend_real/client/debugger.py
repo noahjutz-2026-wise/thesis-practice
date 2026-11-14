@@ -47,19 +47,16 @@ def main():
         # ).squeeze()
         try:
             _topic, payload = sub.recv_multipart()
+            t, img = pickle.loads(payload)
         except zmq.Again:
             print("camera timeout")
-            continue
-        t, img = pickle.loads(payload)
 
         try:
-            _topic, payload = sub_mpu.recv_multipart()
+            _topic, payload = sub_mpu.recv_multipart(zmq.EAGAIN)
+            if i % 10 == 0:
+                print(pickle.loads(payload))
         except zmq.Again:
-            print("mpu timeout")
-            continue
-
-        if i % 10 == 0:
-            print(pickle.loads(payload))
+            pass
 
         drain(sub)
         drain(sub_mpu)

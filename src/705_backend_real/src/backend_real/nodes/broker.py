@@ -15,8 +15,10 @@ def main():
     logging.basicConfig(level=logging.INFO)
     ctx = zmq.Context.instance()
     with ctx.socket(zmq.XSUB) as xsub, ctx.socket(zmq.XPUB) as xpub:
+        xsub.setsockopt(zmq.RCVHWM, 1)
         xsub.bind(IN)
         xsub.bind(HOST_SUB)
+        xpub.setsockopt(zmq.SNDHWM, 1)
         xpub.bind(OUT)
         xpub.bind(HOST_PUB)
 

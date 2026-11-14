@@ -34,6 +34,7 @@ def mpu(get_device: Callable[..., tuple[serial.Serial, float]]):
     s, offset = get_device()
     ctx = zmq.Context.instance()
     pub = ctx.socket(zmq.PUB)
+    pub.setsockopt(zmq.SNDHWM, 1)
     pub.connect(IN)
 
     logger.info(f"up: {s.port}")

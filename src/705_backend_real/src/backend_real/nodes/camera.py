@@ -30,6 +30,7 @@ def camera(get_device: Callable[[], cv2.VideoCapture]):
     device = get_device()
     ctx = zmq.Context.instance()
     pub = ctx.socket(zmq.PUB)
+    pub.setsockopt(zmq.SNDHWM, 1)
     pub.connect(IN)
 
     logger.info(f"up: {device.getBackendName()}")

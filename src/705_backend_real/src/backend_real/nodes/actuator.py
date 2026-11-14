@@ -29,28 +29,30 @@ def main():
         if res != COMM_SUCCESS:
             raise RuntimeError("Torque on failed")
 
-    sub_act = zmq.Context.instance().socket(zmq.SUB)
-    sub_act.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_ACTUATOR)
-    sub_act.connect(OUT)
+    ctx = zmq.Context.instance()
+    with ctx.socket(zmq.SUB) as sub:
+        sub.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_ACTUATOR)
+        sub.setsockopt(zmq.RCVHWM, 1)
+        sub.connect(OUT)
 
-    logger.info(f"up: {port.is_open}")
+        logger.info(f"up: {port.is_open}")
 
-    try:
-        while True:
-            _topic, payload = sub_act.recv_multipart()
-            x, y = pickle.loads(payload)
+        try:
+            while True:
+                _topic, payload = sub.recv_multipart()
+                x, y = pickle.loads(payload)
 
-            res = packet.write2ByteTxOnly(port, ID_X, 102, int(x) & 0xFFFF)
-            if res != COMM_SUCCESS:
-                raise RuntimeError(f"ID_X: {res}")
-            res = packet.write2ByteTxOnly(port, ID_Y, 102, int(y) & 0xFFFF)
-            if res != COMM_SUCCESS:
-                raise RuntimeError(f"ID_Y: {res}")
-    except KeyboardInterrupt:
-        for dxl_id in (1, 2):
-            packet.write2ByteTxRx(port, dxl_id, 102, 0)
-            packet.write1ByteTxRx(port, dxl_id, 64, 0)
-        port.closePort()
+                res = packet.write2ByteTxOnly(port, ID_X, 102, int(x) & 0xFFFF)
+                if res != COMM_SUCCESS:
+                    raise RuntimeError(f"ID_X: {res}")
+                res = packet.write2ByteTxOnly(port, ID_Y, 102, int(y) & 0xFFFF)
+                if res != COMM_SUCCESS:
+                    raise RuntimeError(f"ID_Y: {res}")
+        except KeyboardInterrupt:
+            for dxl_id in (1, 2):
+                packet.write2ByteTxRx(port, dxl_id, 102, 0)
+                packet.write1ByteTxRx(port, dxl_id, 64, 0)
+            port.closePort()
 
 
 if __name__ == "__main__":

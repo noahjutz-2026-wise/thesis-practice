@@ -15,6 +15,8 @@ def main():
     ctx = zmq.Context.instance()
     with ctx.socket(zmq.SUB) as sub, ctx.socket(zmq.PUB) as pub:
         sub.setsockopt(zmq.SUBSCRIBE, TOPIC_KEY_CAMERA)
+        sub.setsockopt(zmq.RCVHWM, 1)
+        pub.setsockopt(zmq.SNDHWM, 1)
         sub.connect(OUT)
         pub.connect(IN)
 

@@ -1,6 +1,7 @@
 import logging
 import os
 import pickle
+import time
 from collections.abc import Callable
 
 import cv2
@@ -37,6 +38,9 @@ def camera(get_device: Callable[[], cv2.VideoCapture]):
     while True:
         ret, frame = device.read()
         if not ret:
+            device.release()
+            time.sleep(0.1)
+            device = get_device()
             misses += 1
             logger.warning(f"frame miss {misses}")
             if misses >= 60:
@@ -45,11 +49,6 @@ def camera(get_device: Callable[[], cv2.VideoCapture]):
         misses = 0
 
         t = device.get(cv2.CAP_PROP_POS_MSEC)
-        if not ret:
-            logger.info("frame miss")
-            device.release()
-            device = get_device()
-            continue
         pub.send_multipart([TOPIC_KEY_CAMERA, pickle.dumps([t, frame])])
 
 

@@ -1,4 +1,5 @@
 import functools
+import sys
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from cv2.typing import MatLike
 from numpy.typing import NDArray
 from scipy.spatial.transform import Rotation
 
+DEVICE_CAM = "/dev/v4l/by-id/usb-e-con_systems_See3CAM_24CUG_2509460D-video-index0"
 FILE_CAM_MARKERS = Path(__file__).parents[3] / "025_opencv/markers.csv"
 FILE_CAM_CONFIG = Path(__file__).parents[3] / "025_opencv/calibration.yaml"
 
@@ -148,3 +150,20 @@ def estimate_fn():
     return functools.partial(
         estimate, pose_inner=pose_inner, pose_outer=pose_outer, track=track
     )
+
+
+def main():
+    cap = cv2.VideoCapture(DEVICE_CAM)
+    if not cap.isOpened():
+        sys.exit(1)
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            sys.exit(2)
+        cv2.imshow("f", frame)
+        cv2.waitKey(1)
+
+
+if __name__ == "__main__":
+    main()

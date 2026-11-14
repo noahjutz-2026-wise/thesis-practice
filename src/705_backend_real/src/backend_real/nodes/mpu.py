@@ -45,6 +45,7 @@ def mpu(get_device: Callable[..., tuple[serial.Serial, float]]):
         row = np.array(line.split(b","), dtype=np.float64)
         row[0] = (row[0] + offset) / 1e6  # mcu micros -> host monotonic seconds
         pub.send_multipart([TOPIC_KEY_MPU, pickle.dumps(row)])
+        time.sleep(0.01)
 
 
 def main():

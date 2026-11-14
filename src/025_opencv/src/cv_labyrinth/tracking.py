@@ -152,6 +152,11 @@ def estimate_fn():
     )
 
 
+def pipeline(frame: cv2.typing.MatLike) -> cv2.typing.MatLike:
+
+    return frame
+
+
 def main():
     cap = cv2.VideoCapture(DEVICE_CAM)
     if not cap.isOpened():
@@ -161,7 +166,8 @@ def main():
         ret, frame = cap.read()
         if not ret:
             sys.exit(2)
-        cv2.imshow("f", frame)
+        dbg_frame = pipeline(frame)
+        cv2.imshow("f", dbg_frame)
         cv2.waitKey(1)
 
 

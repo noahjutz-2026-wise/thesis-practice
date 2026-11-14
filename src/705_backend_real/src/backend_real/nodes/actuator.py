@@ -1,7 +1,5 @@
 import logging
-import os
 import pickle
-import time
 
 import zmq
 from dynamixel_sdk import COMM_SUCCESS, PacketHandler, PortHandler
@@ -12,13 +10,8 @@ from backend_real.nodes.broker import OUT
 
 logger = logging.getLogger(__name__)
 
-FREQUENCY = 50
-
 ID_X = 1
 ID_Y = 2
-
-fd = os.timerfd_create(time.CLOCK_MONOTONIC)
-os.timerfd_settime(fd, initial=1 / FREQUENCY, interval=1 / FREQUENCY)
 
 
 def main():
@@ -44,8 +37,6 @@ def main():
 
     try:
         while True:
-            os.read(fd, 8)
-
             _topic, payload = sub_act.recv_multipart()
             x, y = pickle.loads(payload)
 

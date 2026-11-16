@@ -3,14 +3,20 @@ name = "deploy-mujoco-mjlab"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }
+authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
+requires-python = ">=3.13, <3.15"
+dependencies = [
+    "mjlab>=1.6.1",
+    "wandb>=0.22.3,<0.23",
+    "scipy>=1.18.1",
+    "torch>=2.15.0",
 ]
-requires-python = ">=3.13"
-dependencies = []
 
 [project.scripts]
 deploy-mujoco-mjlab = "deploy_mujoco_mjlab:main"
+
+[project.entry-points."mjlab.tasks"]
+deploy-mujoco-mjlab = "deploy_mujoco_mjlab"
 
 [build-system]
 requires = ["uv_build>=0.13.8,<0.14.0"]

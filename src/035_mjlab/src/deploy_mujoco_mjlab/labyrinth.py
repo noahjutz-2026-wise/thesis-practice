@@ -12,8 +12,8 @@ import mujoco
 import torch
 from mjlab.actuator.xml_actuator import XmlActuatorCfg
 from mjlab.entity import Entity, EntityArticulationInfoCfg, EntityCfg
-from mjlab.utils.spec_config import CollisionCfg
 from mjlab.envs import ManagerBasedRlEnv
+from mjlab.envs.manager_based_rl_env import ManagerBasedRlEnvCfg
 from mjlab.envs.mdp import joint_pos_rel, joint_vel_rel, time_out
 from mjlab.envs.mdp.actions import JointEffortActionCfg
 from mjlab.envs.mdp.events import resolve_env_ids
@@ -22,10 +22,10 @@ from mjlab.managers.observation_manager import ObservationGroupCfg, ObservationT
 from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.managers.termination_manager import TerminationTermCfg
-from mjlab.envs.manager_based_rl_env import ManagerBasedRlEnvCfg
 from mjlab.scene import SceneCfg
 from mjlab.sim import MujocoCfg, SimulationCfg
 from mjlab.terrains.terrain_entity import TerrainEntityCfg
+from mjlab.utils.spec_config import CollisionCfg
 
 LABYRINTH_XML = Path(__file__).parents[3] / "704_backend_mujoco/export.xml"
 LAYOUT_PATH = (
@@ -238,9 +238,7 @@ def reset_ball_at_waypoint(
     pose[:, 2] = BALL_START_Z
     pose[:, 3] = 1.0
     ball.write_root_link_pose_to_sim(pose, env_ids=env_ids)
-    ball.write_root_link_velocity_to_sim(
-        torch.zeros(n, 6, device=dev), env_ids=env_ids
-    )
+    ball.write_root_link_velocity_to_sim(torch.zeros(n, 6, device=dev), env_ids=env_ids)
     env._labyrinth_progress[env_ids] = _CUM.to(dev)[idx]
 
 

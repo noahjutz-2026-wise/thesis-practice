@@ -34,7 +34,9 @@ LAYOUT_PATH = (
 )
 
 WINDOW = 0.01  # normalized progress +/- used for reward subpath
-BALL_START_Z = 0.01  # default ball body z from the XML
+BALL_START_X = 0.01  # default ball body pos from the XML
+BALL_START_Y = 0.1
+BALL_START_Z = 0.01
 PENALTY = 0.0001
 FALL_Z = -0.05  # ball world z below this counts as fallen off the board
 
@@ -58,10 +60,16 @@ _BOARD_CFG = SceneEntityCfg("board", joint_names=("joint_x", "joint_y"))
 
 
 def _name_geoms(spec: mujoco.MjSpec, prefix: str) -> None:
-    """Name unnamed geoms so CollisionCfg patterns can match them."""
+    """Name unnamed geoms by shape type so CollisionCfg patterns can match."""
+    names = {
+        mujoco.mjtGeom.mjGEOM_MESH: "mesh",
+        mujoco.mjtGeom.mjGEOM_SPHERE: "sphere",
+        mujoco.mjtGeom.mjGEOM_PLANE: "plane",
+    }
     for i, geom in enumerate(spec.geoms):
         if not geom.name:
-            geom.name = f"{prefix}_{i}"
+            kind = names.get(geom.type, f"type{int(geom.type)}")
+            geom.name = f"{prefix}_{kind}_{i}"
 
 
 def _get_board_spec() -> mujoco.MjSpec:
@@ -94,7 +102,7 @@ def _get_ball_spec() -> mujoco.MjSpec:
 # contact buffers and OOMs the GPU at high num_envs.
 _BOARD_COLLISIONS = (
     CollisionCfg(
-        geom_names_expr=("board_.*",),
+        geom_names_expr=("board_mesh_.*",),
         contype=4,
         conaffinity=2,
         condim=3,
@@ -103,7 +111,7 @@ _BOARD_COLLISIONS = (
 )
 _BALL_COLLISIONS = (
     CollisionCfg(
-        geom_names_expr=("ball_geom",),
+        geom_names_expr=("ball_sphere_.*",),
         contype=2,
         conaffinity=4,
         condim=3,
@@ -217,29 +225,25 @@ def ball_state_obs(env: ManagerBasedRlEnv) -> torch.Tensor:
     return torch.cat([pos, vel], dim=-1)
 
 
-def reset_ball_at_waypoint(
+def reset_ball_at_start(
     env: ManagerBasedRlEnv,
     env_ids: torch.Tensor | None,
-    position_noise: float = 0.002,
 ) -> None:
-    """Start the ball at a random waypoint, like the gym env's random_starts."""
+    """Reset the ball to the XML default start pose and progress to 0."""
     _ensure_progress(env)
     env_ids = resolve_env_ids(env, env_ids)
     ball: Entity = env.scene["ball"]
     n = len(env_ids)
     dev = env.device
 
-    idx = torch.randint(len(_WAYPOINTS), (n,), device=dev)
-    target = _WAYPOINTS.to(dev)[idx] + (torch.rand(n, 2, device=dev) * 2 - 1) * (
-        position_noise
-    )
     pose = torch.zeros(n, 7, device=dev)
-    pose[:, :2] = target
+    pose[:, 0] = BALL_START_X
+    pose[:, 1] = BALL_START_Y
     pose[:, 2] = BALL_START_Z
     pose[:, 3] = 1.0
     ball.write_root_link_pose_to_sim(pose, env_ids=env_ids)
     ball.write_root_link_velocity_to_sim(torch.zeros(n, 6, device=dev), env_ids=env_ids)
-    env._labyrinth_progress[env_ids] = _CUM.to(dev)[idx]
+    env._labyrinth_progress[env_ids] = 0.0
 
 
 # --- env cfg -----------------------------------------------------------------
@@ -277,9 +281,8 @@ def _make_labyrinth_cfg() -> ManagerBasedRlEnvCfg:
     }
     events = {
         "reset_ball": EventTermCfg(
-            func=reset_ball_at_waypoint,
+            func=reset_ball_at_start,
             mode="reset",
-            params={"position_noise": 0.002},
         ),
     }
 

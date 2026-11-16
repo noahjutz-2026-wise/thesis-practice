@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.13,<3.15"
 dependencies = [
-    "playground>=1.0.1",
+    "playground[rl]>=1.0.1",
 ]
 
 [project.scripts]

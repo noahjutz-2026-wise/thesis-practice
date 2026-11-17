@@ -25,6 +25,32 @@ tags = [
     "obs-img-top-gray",
     "obs-img-ball-gray-vec",
     "obs-img-top-gray-vec",
+    "rew-const-0.0",
+    "rew-const-0.0001",
+    "rew-const-1e-05",
+    "rew-holes-1e-05",
+    "rew-holes-0.001",
+    "rew-holes-0.1",
+    "rew-negdelta-0.0",
+    "rew-negdelta-0.1",
+    "rew-clamp-0.01",
+    "rew-clamp-0.1",
+    "rew-clamp-1.0",
+    "rew-clampdelta-0.01",
+    "rew-clampdelta-0.1",
+    "rew-clampdelta-1.0",
+    "rl-hpo-lr-1e-3",
+    "rl-hpo-lr-1e-5",
+    "rl-hpo-ent-0.001",
+    "rl-hpo-ent-0.1",
+    "rl-hpo-clip-0.05",
+    "rl-hpo-clip-0.4",
+    "combo-tvec002-holes10",
+    "combo-tvec002-wallsray5",
+    "combo-tvecdef-negdelta01",
+    "mujoco-imu",
+    "curric-nhw-nh-normal",
+    "curric-nhw-nw-normal",
 ]
 
 ENTITY_PROJECT = "tjno/agent-experiments"
@@ -48,6 +74,11 @@ def last_runs_by_tag(n=5):
         picked, seen_seeds = [], set()
         for run in runs:
             seed = run.config.get("seed")
+            if seed is None:
+                # curric-* runs don't log a config seed; it's in the run name
+                name_seed = run.name.rsplit("_seed", 1)
+                if len(name_seed) == 2 and name_seed[1].isdigit():
+                    seed = int(name_seed[1])
             if seed in seen_seeds:
                 continue
             seen_seeds.add(seed)
@@ -59,6 +90,7 @@ def last_runs_by_tag(n=5):
 
 
 METRIC = "env_runners/episode_return_max"
+FALLBACK_METRIC = "train/return_mean"
 
 
 def episode_returns():
@@ -68,6 +100,9 @@ def episode_returns():
         values = []
         for run in runs:
             value = run.summary.get(METRIC)
+            if value is None:
+                # curric-* runs log train/return_mean instead of env_runners/*
+                value = run.summary.get(FALLBACK_METRIC) if "curric-" in tag else None
             if value is None:
                 raise ValueError(
                     f"run {run.name} (tag {tag!r}, seed {run.config.get('seed')}) "

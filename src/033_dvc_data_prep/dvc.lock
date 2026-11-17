@@ -26,10 +26,10 @@ stages:
     deps:
     - path: src/dvc_data_prep/sources/get_wandb.py
       hash: md5
-      md5: f8246dfce110711a1cc59b8822b5128a
-      size: 2092
+      md5: 2bcebcb2b66a553ad5299d2c9d962551
+      size: 3230
     outs:
     - path: outs/wandb_returns.json
       hash: md5
-      md5: 3dc78863ae1c0373a687d8439f6ad995
-      size: 3644
+      md5: 65a1e78d2c1d6c8d9e4efd5fddfb66e7
+      size: 7581

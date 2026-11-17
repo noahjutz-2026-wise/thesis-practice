@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 
 import mujoco
@@ -24,6 +25,12 @@ from mjlab.viewer import NativeMujocoViewer
 from deploy_mujoco_mjlab.cartpole import EntityCfg
 
 LABYRINTH_XML = Path(__file__).parents[3] / "704_backend_mujoco/export.xml"
+LAYOUT_PATH = (
+    Path(__file__).parents[3]
+    / "706_maze_build123d/src/labyrinth_game_cad/layouts/cyberrunner_hard_layout.json"
+)
+with open(LAYOUT_PATH, "r") as f:
+    _WAYPOINTS = torch.tensor(json.load(f)["waypoints"], dtype=torch.float32)
 
 
 def _ball_wrt_board(env: ManagerBasedRlEnv) -> torch.Tensor:

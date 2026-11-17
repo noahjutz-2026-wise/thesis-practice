@@ -87,42 +87,51 @@ def compute_commit_wc(repo_dir, commit_hash):
             # No typst document at this commit
             return 0
 
-        # Check if submodule vendor/literature exists at this commit
-        sub_info = subprocess.run(
-            ["git", "-C", repo_dir, "ls-tree", commit_hash, "vendor/literature"],
-            capture_output=True,
-            text=True,
-        ).stdout.split()
+        # Check submodules (e.g. vendor/literature, vendor/data)
+        submodules = ["vendor/literature", "vendor/data"]
+        vendor_dir = os.path.join(repo_dir, "vendor")
+        if os.path.isdir(vendor_dir):
+            for entry in sorted(os.listdir(vendor_dir)):
+                cand = f"vendor/{entry}"
+                if cand not in submodules and os.path.isdir(os.path.join(vendor_dir, entry)):
+                    submodules.append(cand)
 
-        sub_copied = False
-        lit_repo = os.path.join(repo_dir, "vendor", "literature")
-        if len(sub_info) >= 3 and os.path.isdir(lit_repo):
-            sub_commit = sub_info[2]
-            sub_dir = os.path.join(tmpdir, "vendor", "literature")
-            os.makedirs(sub_dir, exist_ok=True)
-            try:
-                sub_arch = subprocess.run(
-                    ["git", "-C", lit_repo, "archive", sub_commit],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.DEVNULL,
-                    check=True,
-                ).stdout
-                subprocess.run(
-                    ["tar", "-x", "-C", sub_dir],
-                    input=sub_arch,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                    check=True,
-                )
-                sub_copied = True
-            except Exception:
-                pass
+        for sub_rel in submodules:
+            sub_info = subprocess.run(
+                ["git", "-C", repo_dir, "ls-tree", commit_hash, sub_rel],
+                capture_output=True,
+                text=True,
+            ).stdout.split()
 
-        # Fallback to local working copy of vendor/literature if needed
-        if not sub_copied and os.path.isdir(lit_repo):
-            sub_dir = os.path.join(tmpdir, "vendor", "literature")
-            os.makedirs(os.path.dirname(sub_dir), exist_ok=True)
-            shutil.copytree(lit_repo, sub_dir, dirs_exist_ok=True)
+            sub_copied = False
+            sub_repo = os.path.join(repo_dir, sub_rel)
+            if len(sub_info) >= 3 and os.path.isdir(sub_repo):
+                sub_commit = sub_info[2]
+                sub_dir = os.path.join(tmpdir, sub_rel)
+                os.makedirs(sub_dir, exist_ok=True)
+                try:
+                    sub_arch = subprocess.run(
+                        ["git", "-C", sub_repo, "archive", sub_commit],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.DEVNULL,
+                        check=True,
+                    ).stdout
+                    subprocess.run(
+                        ["tar", "-x", "-C", sub_dir],
+                        input=sub_arch,
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        check=True,
+                    )
+                    sub_copied = True
+                except Exception:
+                    pass
+
+            # Fallback to local working copy of submodule if needed
+            if not sub_copied and os.path.isdir(sub_repo):
+                sub_dir = os.path.join(tmpdir, sub_rel)
+                os.makedirs(os.path.dirname(sub_dir), exist_ok=True)
+                shutil.copytree(sub_repo, sub_dir, dirs_exist_ok=True)
 
         short_hash = commit_hash[:7]
 
@@ -373,6 +382,11 @@ def main():
         action="store_true",
         help="Bypass existing cache",
     )
+    parser.add_argument(
+        "--retry-failed",
+        action="store_true",
+        help="Retry commits that previously evaluated to null/None in cache",
+    )
     args = parser.parse_args()
 
     repo_dir = os.path.abspath(args.repo_dir)
@@ -393,7 +407,10 @@ def main():
     print(f"Repository: {repo_dir}")
     print(f"Found {len(commits)} commits to inspect.")
 
-    to_compute = [c for c in commits if c["hash"] not in cache]
+    to_compute = [
+        c for c in commits
+        if c["hash"] not in cache or (args.retry_failed and cache.get(c["hash"]) is None)
+    ]
     print(f"{len(to_compute)} commits to compute ({len(commits) - len(to_compute)} cached).")
 
     if to_compute:

@@ -4,8 +4,10 @@ import mujoco
 import torch
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.envs.manager_based_rl_env import ManagerBasedRlEnvCfg
+from mjlab.envs.mdp.events import reset_scene_to_default
 from mjlab.rl.vecenv_wrapper import RslRlVecEnvWrapper
 from mjlab.scene.scene import SceneCfg
+from mjlab.terrains.terrain_entity import TerrainEntityCfg
 from mjlab.viewer import NativeMujocoViewer
 
 from deploy_mujoco_mjlab.cartpole import EntityCfg
@@ -33,18 +35,27 @@ def _get_ball_spec() -> mujoco.MjSpec:
 
 
 def main():
+    events = {"reset_scene": reset_scene_to_default}
     scene = SceneCfg(
+        terrain=TerrainEntityCfg(terrain_type="plane"),
         entities={
-            "ball": EntityCfg(spec_fn=_get_ball_spec),
-            "board": EntityCfg(spec_fn=_get_board_spec),
-        }
+            "ball": EntityCfg(
+                spec_fn=_get_ball_spec,
+                init_state=EntityCfg.InitialStateCfg(pos=(0.01, 0.1, 0.16)),
+            ),
+            "board": EntityCfg(
+                spec_fn=_get_board_spec,
+                init_state=EntityCfg.InitialStateCfg(pos=(0.0, 0.0, 0.15)),
+            ),
+        },
+        num_envs=2,
     )
 
     env_cfg = ManagerBasedRlEnvCfg(
         scene=scene,
         decimation=5,
     )
-    env = ManagerBasedRlEnv(cfg=env_cfg, device="cuda:0")
+    env = ManagerBasedRlEnv(cfg=env_cfg, device="cuda:0", events=events)
     env = RslRlVecEnvWrapper(env)
 
     NativeMujocoViewer(

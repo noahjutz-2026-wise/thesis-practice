@@ -78,7 +78,7 @@ def main():
 
     NativeMujocoViewer(
         env,
-        lambda obs: torch.zeros(
+        lambda obs: torch.ones(
             env.unwrapped.action_space.shape, device=env.unwrapped.device
         ),
     ).run()

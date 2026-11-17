@@ -5,6 +5,7 @@ import torch
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.envs.manager_based_rl_env import ManagerBasedRlEnvCfg
 from mjlab.envs.mdp.events import reset_scene_to_default
+from mjlab.managers.event_manager import EventTermCfg
 from mjlab.rl.vecenv_wrapper import RslRlVecEnvWrapper
 from mjlab.scene.scene import SceneCfg
 from mjlab.terrains.terrain_entity import TerrainEntityCfg
@@ -34,8 +35,7 @@ def _get_ball_spec() -> mujoco.MjSpec:
     return spec
 
 
-def main():
-    events = {"reset_scene": reset_scene_to_default}
+def _get_scene_cfg() -> SceneCfg:
     scene = SceneCfg(
         terrain=TerrainEntityCfg(terrain_type="plane"),
         entities={
@@ -50,12 +50,14 @@ def main():
         },
         num_envs=2,
     )
+    return scene
 
-    env_cfg = ManagerBasedRlEnvCfg(
-        scene=scene,
-        decimation=5,
-    )
-    env = ManagerBasedRlEnv(cfg=env_cfg, device="cuda:0", events=events)
+
+def main():
+    scene_cfg = _get_scene_cfg()
+    events = {"reset_scene": EventTermCfg(mode="reset", func=reset_scene_to_default)}
+    env_cfg = ManagerBasedRlEnvCfg(scene=scene_cfg, decimation=5, events=events)
+    env = ManagerBasedRlEnv(cfg=env_cfg, device="cuda:0")
     env = RslRlVecEnvWrapper(env)
 
     NativeMujocoViewer(

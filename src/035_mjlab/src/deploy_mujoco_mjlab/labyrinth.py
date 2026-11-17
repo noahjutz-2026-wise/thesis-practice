@@ -3,22 +3,38 @@ from pathlib import Path
 import mujoco
 import torch
 from mjlab.actuator.xml_actuator import XmlActuatorCfg
+from mjlab.entity import Entity
 from mjlab.entity.entity import EntityArticulationInfoCfg
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.envs.manager_based_rl_env import ManagerBasedRlEnvCfg
 from mjlab.envs.mdp.actions.actions import JointEffortActionCfg
 from mjlab.envs.mdp.events import reset_scene_to_default
+from mjlab.envs.mdp.terminations import time_out
 from mjlab.managers.action_manager import ActionTermCfg
 from mjlab.managers.event_manager import EventTermCfg
+from mjlab.managers.termination_manager import TerminationTermCfg
 from mjlab.rl.config import RslRlOnPolicyRunnerCfg
 from mjlab.rl.vecenv_wrapper import RslRlVecEnvWrapper
 from mjlab.scene.scene import SceneCfg
 from mjlab.terrains.terrain_entity import TerrainEntityCfg
+from mjlab.utils.lab_api.math import subtract_frame_transforms
 from mjlab.viewer import NativeMujocoViewer
 
 from deploy_mujoco_mjlab.cartpole import EntityCfg
 
 LABYRINTH_XML = Path(__file__).parents[3] / "704_backend_mujoco/export.xml"
+
+
+def ball_fallen(env: ManagerBasedRlEnv) -> torch.Tensor:
+    board: Entity = env.scene["board"]
+    ball: Entity = env.scene["ball"]
+
+    ball_pos, _ = subtract_frame_transforms(
+        board.data.root_link_pos_w,
+        board.data.root_link_quat_w,
+        ball.data.root_link_pos_w,
+    )
+    return ball_pos[:, 2] < -0.05
 
 
 def _get_board_spec() -> mujoco.MjSpec:
@@ -72,8 +88,17 @@ def labyrinth_env_cfg(scene_cfg: SceneCfg | None = None) -> ManagerBasedRlEnvCfg
             entity_name="board", actuator_names=("joint_x", "joint_y")
         )
     }
+    terminations = {
+        "time_out": TerminationTermCfg(func=time_out, time_out=True),
+        "fallen": TerminationTermCfg(func=ball_fallen),
+    }
     env_cfg = ManagerBasedRlEnvCfg(
-        scene=scene_cfg, decimation=5, events=events, actions=actions
+        scene=scene_cfg,
+        decimation=5,
+        events=events,
+        actions=actions,
+        terminations=terminations,
+        episode_length_s=10,
     )
     return env_cfg
 

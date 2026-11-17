@@ -62,8 +62,7 @@ def _get_scene_cfg() -> SceneCfg:
     return scene
 
 
-def main():
-    scene_cfg = _get_scene_cfg()
+def rl_env_cfg(scene_cfg: SceneCfg) -> ManagerBasedRlEnvCfg:
     events = {"reset_scene": EventTermCfg(mode="reset", func=reset_scene_to_default)}
     actions: dict[str, ActionTermCfg] = {
         "effort": JointEffortActionCfg(
@@ -73,6 +72,12 @@ def main():
     env_cfg = ManagerBasedRlEnvCfg(
         scene=scene_cfg, decimation=5, events=events, actions=actions
     )
+    return env_cfg
+
+
+def main():
+    scene_cfg = _get_scene_cfg()
+    env_cfg = rl_env_cfg(scene_cfg)
     env = ManagerBasedRlEnv(cfg=env_cfg, device="cuda:0")
     env = RslRlVecEnvWrapper(env)
 

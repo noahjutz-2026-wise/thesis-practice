@@ -16,7 +16,7 @@ from mjlab.envs import ManagerBasedRlEnv
 from mjlab.envs.manager_based_rl_env import ManagerBasedRlEnvCfg
 from mjlab.envs.mdp import joint_pos_rel, joint_vel_rel, time_out
 from mjlab.envs.mdp.actions import JointEffortActionCfg
-from mjlab.envs.mdp.events import resolve_env_ids
+from mjlab.envs.mdp.events import reset_scene_to_default, resolve_env_ids
 from mjlab.managers.event_manager import EventTermCfg
 from mjlab.managers.observation_manager import ObservationGroupCfg, ObservationTermCfg
 from mjlab.managers.reward_manager import RewardTermCfg
@@ -280,6 +280,7 @@ def _make_labyrinth_cfg() -> ManagerBasedRlEnvCfg:
         "goal": TerminationTermCfg(func=goal_reached),
     }
     events = {
+        "reset_scene": EventTermCfg(func=reset_scene_to_default, mode="reset"),
         "reset_ball": EventTermCfg(
             func=reset_ball_at_start,
             mode="reset",

@@ -12,6 +12,7 @@ from mjlab.envs.mdp.events import reset_scene_to_default
 from mjlab.envs.mdp.terminations import time_out
 from mjlab.managers.action_manager import ActionTermCfg
 from mjlab.managers.event_manager import EventTermCfg
+from mjlab.managers.metrics_manager import MetricsTermCfg
 from mjlab.managers.termination_manager import TerminationTermCfg
 from mjlab.rl.config import RslRlOnPolicyRunnerCfg
 from mjlab.rl.vecenv_wrapper import RslRlVecEnvWrapper
@@ -25,7 +26,7 @@ from deploy_mujoco_mjlab.cartpole import EntityCfg
 LABYRINTH_XML = Path(__file__).parents[3] / "704_backend_mujoco/export.xml"
 
 
-def ball_fallen(env: ManagerBasedRlEnv) -> torch.Tensor:
+def _ball_wrt_board(env: ManagerBasedRlEnv) -> torch.Tensor:
     board: Entity = env.scene["board"]
     ball: Entity = env.scene["ball"]
 
@@ -34,7 +35,22 @@ def ball_fallen(env: ManagerBasedRlEnv) -> torch.Tensor:
         board.data.root_link_quat_w,
         ball.data.root_link_pos_w,
     )
+    return ball_pos
+
+
+def ball_fallen(env: ManagerBasedRlEnv) -> torch.Tensor:
+    ball_pos = _ball_wrt_board(env)
     return ball_pos[:, 2] < -0.05
+
+
+def metric_ball_pos_x(env: ManagerBasedRlEnv) -> torch.Tensor:
+    ball_pos = _ball_wrt_board(env)
+    return ball_pos[:, 0]
+
+
+def metric_ball_pos_y(env: ManagerBasedRlEnv) -> torch.Tensor:
+    ball_pos = _ball_wrt_board(env)
+    return ball_pos[:, 1]
 
 
 def _get_board_spec() -> mujoco.MjSpec:
@@ -92,12 +108,17 @@ def labyrinth_env_cfg(scene_cfg: SceneCfg | None = None) -> ManagerBasedRlEnvCfg
         "time_out": TerminationTermCfg(func=time_out, time_out=True),
         "fallen": TerminationTermCfg(func=ball_fallen),
     }
+    metrics = {
+        "ball_x": MetricsTermCfg(func=metric_ball_pos_x),
+        "ball_y": MetricsTermCfg(func=metric_ball_pos_y),
+    }
     env_cfg = ManagerBasedRlEnvCfg(
         scene=scene_cfg,
         decimation=5,
         events=events,
         actions=actions,
         terminations=terminations,
+        metrics=metrics,
         episode_length_s=10,
     )
     return env_cfg

@@ -10,6 +10,7 @@ from mjlab.envs.mdp.actions.actions import JointEffortActionCfg
 from mjlab.envs.mdp.events import reset_scene_to_default
 from mjlab.managers.action_manager import ActionTermCfg
 from mjlab.managers.event_manager import EventTermCfg
+from mjlab.rl.config import RslRlOnPolicyRunnerCfg
 from mjlab.rl.vecenv_wrapper import RslRlVecEnvWrapper
 from mjlab.scene.scene import SceneCfg
 from mjlab.terrains.terrain_entity import TerrainEntityCfg
@@ -62,7 +63,9 @@ def _get_scene_cfg() -> SceneCfg:
     return scene
 
 
-def rl_env_cfg(scene_cfg: SceneCfg) -> ManagerBasedRlEnvCfg:
+def labyrinth_env_cfg(scene_cfg: SceneCfg | None = None) -> ManagerBasedRlEnvCfg:
+    if scene_cfg is None:
+        scene_cfg = _get_scene_cfg()
     events = {"reset_scene": EventTermCfg(mode="reset", func=reset_scene_to_default)}
     actions: dict[str, ActionTermCfg] = {
         "effort": JointEffortActionCfg(
@@ -75,9 +78,13 @@ def rl_env_cfg(scene_cfg: SceneCfg) -> ManagerBasedRlEnvCfg:
     return env_cfg
 
 
+def labyrinth_ppo_runner_cfg() -> RslRlOnPolicyRunnerCfg:
+    return RslRlOnPolicyRunnerCfg(experiment_name="labyrinth")
+
+
 def main():
     scene_cfg = _get_scene_cfg()
-    env_cfg = rl_env_cfg(scene_cfg)
+    env_cfg = labyrinth_env_cfg(scene_cfg)
     env = ManagerBasedRlEnv(cfg=env_cfg, device="cuda:0")
     env = RslRlVecEnvWrapper(env)
 

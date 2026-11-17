@@ -21,3 +21,15 @@ stages:
       hash: md5
       md5: 162284def12b99ba633346fca81e3e37
       size: 2100
+  wandb_returns:
+    cmd: uv run python -m dvc_data_prep.processors.wandb_returns
+    deps:
+    - path: src/dvc_data_prep/sources/get_wandb.py
+      hash: md5
+      md5: f8246dfce110711a1cc59b8822b5128a
+      size: 2092
+    outs:
+    - path: outs/wandb_returns.json
+      hash: md5
+      md5: 3dc78863ae1c0373a687d8439f6ad995
+      size: 3644

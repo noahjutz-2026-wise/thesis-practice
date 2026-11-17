@@ -5,3 +5,9 @@ stages:
       - ins/cam_latency.pq
     outs:
       - outs/cam_latency.csv
+  wandb_returns:
+    cmd: uv run python -m dvc_data_prep.processors.wandb_returns
+    deps:
+      - src/dvc_data_prep/sources/get_wandb.py
+    outs:
+      - outs/wandb_returns.json

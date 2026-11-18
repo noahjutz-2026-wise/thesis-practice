@@ -59,10 +59,11 @@ class VisualizerCommand(CommandTerm):
 
     def _debug_vis_impl(self, visualizer: "DebugVisualizer") -> None:
         board: Entity = self._env.scene["board"]
+        board_body = board.body_names.index("board")
         p = torch.ones(self.num_envs, 3, device=self.device) * 0.03
         p_w, r_w = combine_frame_transforms(
-            board.data.root_link_pos_w,
-            board.data.root_link_quat_w,
+            board.data.body_link_pos_w[:, board_body],
+            board.data.body_link_quat_w[:, board_body],
             p,
         )
         mat = matrix_from_quat(r_w)

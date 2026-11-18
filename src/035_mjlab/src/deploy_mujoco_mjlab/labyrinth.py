@@ -72,49 +72,17 @@ class VisualizerCommand(CommandTerm):
         pass
 
     def _debug_vis_impl(self, visualizer: "DebugVisualizer") -> None:
-        E = self._env.num_envs
-        board: Entity = self._env.scene["board"]
-        bi = board.body_names.index("board")
-        # p = torch.ones(self.num_envs, 3, device=self.device) * 0.03
-        wp = self.path_progress.waypoints  # (M, 2)
-        wp = torch.cat([wp, torch.zeros_like(wp[:, :1])], dim=-1)  # (M, 3)
-        M = wp.shape[0]
+        pts = self.path_progress.waypoints  # (M, 2)
+        pts = torch.cat([pts, torch.zeros_like(pts[:, :1])], dim=-1)  # (M, 3)
+        p_w, r_w = _board_to_world(self._env, pts)
+        mat = matrix_from_quat(r_w)  # (E, M, 3, 3)
 
-        pos = board.data.body_link_pos_w[:, bi]  # (E, 3)
-        quat = board.data.body_link_quat_w[:, bi]  # (E, 4)
-
-        # Repeat each pos & quat M times
-        pos_f = pos.unsqueeze(1).expand(E, M, 3)  # (E, M, 3)
-        pos_f = pos_f.reshape(-1, 3)  # (E*M, 3)
-        quat_f = quat.unsqueeze(1).expand(E, M, 4)  # (E, M, 4)
-        quat_f = quat_f.reshape(-1, 4)  # (E*M, 4)
-        wp_f = wp.unsqueeze(0).expand(E, M, 3).reshape(-1, 3)  # (E*M, 3)
-
-        p_w, r_w = combine_frame_transforms(
-            pos_f,
-            quat_f,
-            wp_f,
-        )
-        mat = matrix_from_quat(r_w)  # (E*M, 3, 3)
-        p_w = p_w.view(E, M, 3).cpu().numpy()
-        mat = mat.view(E, M, 3, 3).cpu().numpy()
-
-        bp = _ball_wrt_board(self._env)
-
-        bp_w, _ = combine_frame_transforms(pos, quat, bp)
-
-        for e in range(E):
-            visualizer.add_box(
-                center=bp_w[e].cpu().numpy(),
-                size=np.ones(3) * 0.005,
-                mat=torch.eye(3).cpu().numpy(),
-                color=(0, 1, 0, 1),
-            )
-            for m in range(M):
+        for e in range(p_w.shape[0]):
+            for m in range(mat.shape[1]):
                 visualizer.add_box(
-                    center=p_w[e, m],
+                    center=p_w[e, m].cpu().numpy(),
                     size=np.ones(3) * 0.005,
-                    mat=mat[e, m],
+                    mat=mat[e, m].cpu().numpy(),
                     color=(1, 0, 0, 1),
                 )
 
@@ -138,6 +106,34 @@ def _ball_wrt_board(env: ManagerBasedRlEnv) -> torch.Tensor:
         ball.data.root_link_pos_w,
     )
     return ball_pos
+
+
+def _board_to_world(
+    env: ManagerBasedRlEnv, pts: torch.Tensor
+) -> tuple[torch.Tensor, torch.Tensor]:
+    E = env.num_envs
+    board: Entity = env.scene["board"]
+    bi = board.body_names.index("board")
+    M = pts.shape[0]
+
+    pos = board.data.body_link_pos_w[:, bi]  # (E, 3)
+    quat = board.data.body_link_quat_w[:, bi]  # (E, 4)
+
+    # Repeat each pos & quat M times
+    pos_f = pos.unsqueeze(1).expand(E, M, 3)  # (E, M, 3)
+    pos_f = pos_f.reshape(-1, 3)  # (E*M, 3)
+    quat_f = quat.unsqueeze(1).expand(E, M, 4)  # (E, M, 4)
+    quat_f = quat_f.reshape(-1, 4)  # (E*M, 4)
+    pts_f = pts.unsqueeze(0).expand(E, M, 3).reshape(-1, 3)  # (E*M, 3)
+
+    p_w, r_w = combine_frame_transforms(
+        pos_f,
+        quat_f,
+        pts_f,
+    )
+    p_w = p_w.view(E, M, 3)  # (E, M, 3)
+    r_w = r_w.view(E, M, 4)  # (E, M, 4)
+    return p_w, r_w
 
 
 def ball_fallen(env: ManagerBasedRlEnv) -> torch.Tensor:

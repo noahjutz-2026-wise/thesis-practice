@@ -99,7 +99,17 @@ class VisualizerCommand(CommandTerm):
         p_w = p_w.view(E, M, 3).cpu().numpy()
         mat = mat.view(E, M, 3, 3).cpu().numpy()
 
+        bp = _ball_wrt_board(self._env)
+
+        bp_w, _ = combine_frame_transforms(pos, quat, bp)
+
         for e in range(E):
+            visualizer.add_box(
+                center=bp_w[e].cpu().numpy(),
+                size=np.ones(3) * 0.005,
+                mat=torch.eye(3).cpu().numpy(),
+                color=(0, 1, 0, 1),
+            )
             for m in range(M):
                 visualizer.add_box(
                     center=p_w[e, m],
@@ -119,11 +129,12 @@ class VisualizerCommandCfg(CommandTermCfg):
 
 def _ball_wrt_board(env: ManagerBasedRlEnv) -> torch.Tensor:
     board: Entity = env.scene["board"]
+    bi = board.body_names.index("board")
     ball: Entity = env.scene["ball"]
 
     ball_pos, _ = subtract_frame_transforms(
-        board.data.root_link_pos_w,
-        board.data.root_link_quat_w,
+        board.data.body_link_pos_w[:, bi],
+        board.data.body_link_quat_w[:, bi],
         ball.data.root_link_pos_w,
     )
     return ball_pos

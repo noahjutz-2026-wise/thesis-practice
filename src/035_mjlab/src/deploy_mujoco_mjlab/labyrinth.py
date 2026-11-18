@@ -77,9 +77,7 @@ class VisualizerCommand(CommandTerm):
         p_w, r_w = _board_to_world(self._env, pts)
         mat = matrix_from_quat(r_w)  # (E, M, 3, 3)
 
-        ball: Entity = self._env.scene["ball"]
-        bp = ball.data.root_link_pos_w
-        closest = _closest(p_w, bp)
+        closest = _closest_wp(self._env, pts)
 
         for e in range(p_w.shape[0]):
             for m in range(mat.shape[1]):
@@ -141,8 +139,13 @@ def _board_to_world(
     return p_w, r_w
 
 
-def _closest(pts: torch.Tensor, pt: torch.Tensor):
+def _closest(pts: torch.Tensor, pt: torch.Tensor) -> torch.Tensor:
     return torch.linalg.norm(pts - pt.unsqueeze(1), dim=-1).argmin(dim=-1)
+
+
+def _closest_wp(env: ManagerBasedRlEnv, pts: torch.Tensor) -> torch.Tensor:
+    bp = _ball_wrt_board(env)
+    return _closest(pts, bp)
 
 
 def ball_fallen(env: ManagerBasedRlEnv) -> torch.Tensor:
@@ -230,6 +233,10 @@ def labyrinth_env_cfg(
         "ball_x": MetricsTermCfg(func=metric_ball_pos_x),
         "ball_y": MetricsTermCfg(func=metric_ball_pos_y),
         "ball_z": MetricsTermCfg(func=metric_ball_pos_z),
+        "closest_wp": MetricsTermCfg(
+            func=_closest_wp,
+            params={"pts": torch.nn.functional.pad(path_progress.waypoints, (0, 1))},
+        ),
     }
     commands: dict[str, CommandTermCfg] = {
         "mycmd": VisualizerCommandCfg(

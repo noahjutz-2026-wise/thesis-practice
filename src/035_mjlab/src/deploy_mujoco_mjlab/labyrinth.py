@@ -26,6 +26,7 @@ from mjlab.utils.lab_api.math import (
     combine_frame_transforms,
     matrix_from_quat,
     subtract_frame_transforms,
+    transform_points,
 )
 from mjlab.viewer import NativeMujocoViewer
 from mjlab.viewer.debug_visualizer import DebugVisualizer
@@ -71,24 +72,41 @@ class VisualizerCommand(CommandTerm):
         pass
 
     def _debug_vis_impl(self, visualizer: "DebugVisualizer") -> None:
+        E = self._env.num_envs
         board: Entity = self._env.scene["board"]
-        board_body = board.body_names.index("board")
+        bi = board.body_names.index("board")
         # p = torch.ones(self.num_envs, 3, device=self.device) * 0.03
-        p = self.path_progress.waypoints[0]
-        p = p.unsqueeze(0).expand(self._env.num_envs, -1)
-        p = torch.cat([p, torch.zeros(p.shape[0], 1, device=p.device)], dim=-1)
+        wp = self.path_progress.waypoints  # (M, 2)
+        wp = torch.cat([wp, torch.zeros_like(wp[:, :1])], dim=-1)  # (M, 3)
+        M = wp.shape[0]
+
+        pos = board.data.body_link_pos_w[:, bi]  # (E, 3)
+        quat = board.data.body_link_quat_w[:, bi]  # (E, 4)
+
+        # Repeat each pos & quat M times
+        pos_f = pos.unsqueeze(1).expand(E, M, 3)  # (E, M, 3)
+        pos_f = pos_f.reshape(-1, 3)  # (E*M, 3)
+        quat_f = quat.unsqueeze(1).expand(E, M, 4)  # (E, M, 4)
+        quat_f = quat_f.reshape(-1, 4)  # (E*M, 4)
+        wp_f = wp.unsqueeze(0).expand(E, M, 3).reshape(-1, 3)  # (E*M, 3)
+
         p_w, r_w = combine_frame_transforms(
-            board.data.body_link_pos_w[:, board_body],
-            board.data.body_link_quat_w[:, board_body],
-            p,
+            pos_f,
+            quat_f,
+            wp_f,
         )
-        mat = matrix_from_quat(r_w)
-        visualizer.add_box(
-            center=p_w[0].cpu().numpy(),
-            size=np.ones(3) * 0.05,
-            mat=mat[0].cpu().numpy(),
-            color=(1, 0, 0, 1),
-        )
+        mat = matrix_from_quat(r_w)  # (E*M, 3, 3)
+        p_w = p_w.view(E, M, 3).cpu().numpy()
+        mat = mat.view(E, M, 3, 3).cpu().numpy()
+
+        for e in range(E):
+            for m in range(M):
+                visualizer.add_box(
+                    center=p_w[e, m],
+                    size=np.ones(3) * 0.005,
+                    mat=mat[e, m],
+                    color=(1, 0, 0, 1),
+                )
 
 
 @dataclass(kw_only=True)

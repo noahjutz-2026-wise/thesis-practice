@@ -21,7 +21,11 @@ from mjlab.rl.config import RslRlOnPolicyRunnerCfg
 from mjlab.rl.vecenv_wrapper import RslRlVecEnvWrapper
 from mjlab.scene.scene import SceneCfg
 from mjlab.terrains.terrain_entity import TerrainEntityCfg
-from mjlab.utils.lab_api.math import subtract_frame_transforms
+from mjlab.utils.lab_api.math import (
+    combine_frame_transforms,
+    matrix_from_quat,
+    subtract_frame_transforms,
+)
 from mjlab.viewer import NativeMujocoViewer
 from mjlab.viewer.debug_visualizer import DebugVisualizer
 
@@ -54,7 +58,20 @@ class VisualizerCommand(CommandTerm):
         pass
 
     def _debug_vis_impl(self, visualizer: "DebugVisualizer") -> None:
-        visualizer.add_sphere(center=np.zeros(3), radius=0.02, color=(1, 0, 0, 1))
+        board: Entity = self._env.scene["board"]
+        p = torch.ones(self.num_envs, 3, device=self.device) * 0.03
+        p_w, r_w = combine_frame_transforms(
+            board.data.root_link_pos_w,
+            board.data.root_link_quat_w,
+            p,
+        )
+        mat = matrix_from_quat(r_w)
+        visualizer.add_box(
+            center=p_w[0].cpu().numpy(),
+            size=np.ones(3) * 0.05,
+            mat=mat[0].cpu().numpy(),
+            color=(1, 0, 0, 1),
+        )
 
 
 class VisualizerCommandCfg(CommandTermCfg):

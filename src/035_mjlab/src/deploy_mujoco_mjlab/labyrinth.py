@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import mujoco
 import numpy as np
@@ -16,7 +17,9 @@ from mjlab.envs.mdp.terminations import time_out
 from mjlab.managers.action_manager import ActionTermCfg
 from mjlab.managers.command_manager import CommandTerm, CommandTermCfg
 from mjlab.managers.event_manager import EventTermCfg
+from mjlab.managers.manager_base import ManagerTermBase
 from mjlab.managers.metrics_manager import MetricsTermCfg
+from mjlab.managers.reward_manager import RewardTermCfg
 from mjlab.managers.termination_manager import TerminationTermCfg
 from mjlab.rl.config import RslRlOnPolicyRunnerCfg
 from mjlab.rl.vecenv_wrapper import RslRlVecEnvWrapper
@@ -96,6 +99,24 @@ class VisualizerCommandCfg(CommandTermCfg):
 
     def build(self, env: ManagerBasedRlEnv) -> CommandTerm:
         return VisualizerCommand(self, env)
+
+
+class ProgressDeltaReward(ManagerTermBase):
+    def __init__(self, cfg, env) -> None:
+        self.pts = cfg.params["pts"].to(env.device)
+        self.prev = torch.zeros((env.num_envs,), device=env.device)
+        super().__init__(env)
+
+    def reset(self, env_ids=None):
+        if env_ids is None:
+            env_ids = slice(None)
+        self.prev[env_ids] = 0
+
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        idx = _closest_wp(self._env, self.pts)
+        rew = idx - self.prev
+        self.prev = idx
+        return rew
 
 
 def _ball_wrt_board(env: ManagerBasedRlEnv) -> torch.Tensor:
@@ -238,6 +259,13 @@ def labyrinth_env_cfg(
             params={"pts": torch.nn.functional.pad(path_progress.waypoints, (0, 1))},
         ),
     }
+    rewards = {
+        "closest_wp": RewardTermCfg(
+            func=ProgressDeltaReward,
+            weight=1,
+            params={"pts": torch.nn.functional.pad(path_progress.waypoints, (0, 1))},
+        )
+    }
     commands: dict[str, CommandTermCfg] = {
         "mycmd": VisualizerCommandCfg(
             debug_vis=True,
@@ -253,6 +281,7 @@ def labyrinth_env_cfg(
         terminations=terminations,
         metrics=metrics,
         episode_length_s=10,
+        rewards=rewards,
         commands=commands,
     )
     return env_cfg

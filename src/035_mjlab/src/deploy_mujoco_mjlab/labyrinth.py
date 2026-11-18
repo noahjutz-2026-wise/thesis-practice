@@ -144,6 +144,11 @@ def metric_ball_pos_y(env: ManagerBasedRlEnv) -> torch.Tensor:
     return ball_pos[:, 1]
 
 
+def metric_ball_pos_z(env: ManagerBasedRlEnv) -> torch.Tensor:
+    ball_pos = _ball_wrt_board(env)
+    return ball_pos[:, 2]
+
+
 def _get_board_spec() -> mujoco.MjSpec:
     spec = mujoco.MjSpec.from_file(str(LABYRINTH_XML))
     spec.delete(spec.body("ball"))
@@ -208,6 +213,7 @@ def labyrinth_env_cfg(
     metrics = {
         "ball_x": MetricsTermCfg(func=metric_ball_pos_x),
         "ball_y": MetricsTermCfg(func=metric_ball_pos_y),
+        "ball_z": MetricsTermCfg(func=metric_ball_pos_z),
     }
     commands: dict[str, CommandTermCfg] = {
         "mycmd": VisualizerCommandCfg(

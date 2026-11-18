@@ -77,13 +77,18 @@ class VisualizerCommand(CommandTerm):
         p_w, r_w = _board_to_world(self._env, pts)
         mat = matrix_from_quat(r_w)  # (E, M, 3, 3)
 
+        ball: Entity = self._env.scene["ball"]
+        bp = ball.data.root_link_pos_w
+        closest = _closest(p_w, bp)
+
         for e in range(p_w.shape[0]):
             for m in range(mat.shape[1]):
+                is_closest = m == closest[e]
                 visualizer.add_box(
                     center=p_w[e, m].cpu().numpy(),
                     size=np.ones(3) * 0.005,
                     mat=mat[e, m].cpu().numpy(),
-                    color=(1, 0, 0, 1),
+                    color=(1, 0, 0, 1) if not is_closest else (0, 1, 0, 1),
                 )
 
 
@@ -134,6 +139,10 @@ def _board_to_world(
     p_w = p_w.view(E, M, 3)  # (E, M, 3)
     r_w = r_w.view(E, M, 4)  # (E, M, 4)
     return p_w, r_w
+
+
+def _closest(pts: torch.Tensor, pt: torch.Tensor):
+    return torch.linalg.norm(pts - pt.unsqueeze(1), dim=-1).argmin(dim=-1)
 
 
 def ball_fallen(env: ManagerBasedRlEnv) -> torch.Tensor:

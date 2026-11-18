@@ -1,4 +1,5 @@
 import json
+from dataclasses import dataclass
 from pathlib import Path
 
 import mujoco
@@ -36,13 +37,25 @@ LAYOUT_PATH = (
     Path(__file__).parents[3]
     / "706_maze_build123d/src/labyrinth_game_cad/layouts/cyberrunner_hard_layout.json"
 )
-with open(LAYOUT_PATH, "r") as f:
-    _WAYPOINTS = torch.tensor(json.load(f)["waypoints"], dtype=torch.float32)
+
+
+@dataclass(frozen=True)
+class PathProgress:
+    waypoints: torch.Tensor
+    waypoints_interp: torch.Tensor  # Not yet implemented
+
+    @classmethod
+    def from_json(cls, layout_path, spacing=0.25, device="cuda"):
+        with open(layout_path) as f:
+            wp = torch.tensor(json.load(f)["waypoints"], dtype=torch.float32)
+        return cls(wp.to(device), wp.to(device))
 
 
 class VisualizerCommand(CommandTerm):
     def __init__(self, cfg: CommandTermCfg, env: ManagerBasedRlEnv):
         super().__init__(cfg, env)
+        assert isinstance(cfg, VisualizerCommandCfg)
+        self.path_progress = cfg.path_progress
 
     @property
     def command(self) -> torch.Tensor:
@@ -60,7 +73,10 @@ class VisualizerCommand(CommandTerm):
     def _debug_vis_impl(self, visualizer: "DebugVisualizer") -> None:
         board: Entity = self._env.scene["board"]
         board_body = board.body_names.index("board")
-        p = torch.ones(self.num_envs, 3, device=self.device) * 0.03
+        # p = torch.ones(self.num_envs, 3, device=self.device) * 0.03
+        p = self.path_progress.waypoints[0]
+        p = p.unsqueeze(0).expand(self._env.num_envs, -1)
+        p = torch.cat([p, torch.zeros(p.shape[0], 1, device=p.device)], dim=-1)
         p_w, r_w = combine_frame_transforms(
             board.data.body_link_pos_w[:, board_body],
             board.data.body_link_quat_w[:, board_body],
@@ -75,7 +91,10 @@ class VisualizerCommand(CommandTerm):
         )
 
 
+@dataclass(kw_only=True)
 class VisualizerCommandCfg(CommandTermCfg):
+    path_progress: PathProgress
+
     def build(self, env: ManagerBasedRlEnv) -> CommandTerm:
         return VisualizerCommand(self, env)
 
@@ -149,9 +168,15 @@ def _get_scene_cfg() -> SceneCfg:
     return scene
 
 
-def labyrinth_env_cfg(scene_cfg: SceneCfg | None = None) -> ManagerBasedRlEnvCfg:
+def labyrinth_env_cfg(
+    scene_cfg: SceneCfg | None = None, path_progress: PathProgress | None = None
+) -> ManagerBasedRlEnvCfg:
     if scene_cfg is None:
         scene_cfg = _get_scene_cfg()
+
+    if path_progress is None:
+        path_progress = PathProgress.from_json(LAYOUT_PATH)
+
     events = {"reset_scene": EventTermCfg(mode="reset", func=reset_scene_to_default)}
     actions: dict[str, ActionTermCfg] = {
         "effort": JointEffortActionCfg(
@@ -168,7 +193,9 @@ def labyrinth_env_cfg(scene_cfg: SceneCfg | None = None) -> ManagerBasedRlEnvCfg
     }
     commands: dict[str, CommandTermCfg] = {
         "mycmd": VisualizerCommandCfg(
-            debug_vis=True, resampling_time_range=((0.0, 0.1))
+            debug_vis=True,
+            resampling_time_range=((0.0, 0.1)),
+            path_progress=path_progress,
         )
     }
     env_cfg = ManagerBasedRlEnvCfg(

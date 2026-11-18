@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 import mujoco
+import numpy as np
 import torch
 from mjlab.actuator.xml_actuator import XmlActuatorCfg
 from mjlab.entity import Entity
@@ -12,6 +13,7 @@ from mjlab.envs.mdp.actions.actions import JointEffortActionCfg
 from mjlab.envs.mdp.events import reset_scene_to_default
 from mjlab.envs.mdp.terminations import time_out
 from mjlab.managers.action_manager import ActionTermCfg
+from mjlab.managers.command_manager import CommandTerm, CommandTermCfg
 from mjlab.managers.event_manager import EventTermCfg
 from mjlab.managers.metrics_manager import MetricsTermCfg
 from mjlab.managers.termination_manager import TerminationTermCfg
@@ -21,6 +23,7 @@ from mjlab.scene.scene import SceneCfg
 from mjlab.terrains.terrain_entity import TerrainEntityCfg
 from mjlab.utils.lab_api.math import subtract_frame_transforms
 from mjlab.viewer import NativeMujocoViewer
+from mjlab.viewer.debug_visualizer import DebugVisualizer
 
 from deploy_mujoco_mjlab.cartpole import EntityCfg
 
@@ -31,6 +34,32 @@ LAYOUT_PATH = (
 )
 with open(LAYOUT_PATH, "r") as f:
     _WAYPOINTS = torch.tensor(json.load(f)["waypoints"], dtype=torch.float32)
+
+
+class VisualizerCommand(CommandTerm):
+    def __init__(self, cfg: CommandTermCfg, env: ManagerBasedRlEnv):
+        super().__init__(cfg, env)
+
+    @property
+    def command(self) -> torch.Tensor:
+        return torch.zeros(self.num_envs, 3, device=self.device)
+
+    def _resample_command(self, env_ids: torch.Tensor) -> None:
+        pass
+
+    def _update_command(self, env_ids: torch.Tensor | None) -> None:
+        pass
+
+    def _update_metrics(self) -> None:
+        pass
+
+    def _debug_vis_impl(self, visualizer: "DebugVisualizer") -> None:
+        visualizer.add_sphere(center=np.zeros(3), radius=0.02, color=(1, 0, 0, 1))
+
+
+class VisualizerCommandCfg(CommandTermCfg):
+    def build(self, env: ManagerBasedRlEnv) -> CommandTerm:
+        return VisualizerCommand(self, env)
 
 
 def _ball_wrt_board(env: ManagerBasedRlEnv) -> torch.Tensor:
@@ -119,6 +148,11 @@ def labyrinth_env_cfg(scene_cfg: SceneCfg | None = None) -> ManagerBasedRlEnvCfg
         "ball_x": MetricsTermCfg(func=metric_ball_pos_x),
         "ball_y": MetricsTermCfg(func=metric_ball_pos_y),
     }
+    commands: dict[str, CommandTermCfg] = {
+        "mycmd": VisualizerCommandCfg(
+            debug_vis=True, resampling_time_range=((0.0, 0.1))
+        )
+    }
     env_cfg = ManagerBasedRlEnvCfg(
         scene=scene_cfg,
         decimation=5,
@@ -127,6 +161,7 @@ def labyrinth_env_cfg(scene_cfg: SceneCfg | None = None) -> ManagerBasedRlEnvCfg
         terminations=terminations,
         metrics=metrics,
         episode_length_s=10,
+        commands=commands,
     )
     return env_cfg
 

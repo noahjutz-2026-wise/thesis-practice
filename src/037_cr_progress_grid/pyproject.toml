@@ -3,14 +3,12 @@ name = "maze-path-grid-lookup"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-authors = [
-    { name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }
-]
+authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = ["numpy>=2.5.5"]
 
 [project.scripts]
-maze-path-grid-lookup = "maze_path_grid_lookup:main"
+proggrid = "maze_path_grid_lookup.main:main"
 
 [build-system]
 requires = ["uv_build>=0.13.9,<0.14.0"]

@@ -11,6 +11,7 @@ from mjlab.entity import Entity
 from mjlab.entity.entity import EntityArticulationInfoCfg
 from mjlab.envs import ManagerBasedRlEnv
 from mjlab.envs.manager_based_rl_env import ManagerBasedRlEnvCfg
+from mjlab.envs.mdp import observations as obs_fns
 from mjlab.envs.mdp.actions.actions import JointEffortActionCfg
 from mjlab.envs.mdp.events import reset_scene_to_default
 from mjlab.envs.mdp.terminations import time_out
@@ -19,7 +20,9 @@ from mjlab.managers.command_manager import CommandTerm, CommandTermCfg
 from mjlab.managers.event_manager import EventTermCfg
 from mjlab.managers.manager_base import ManagerTermBase
 from mjlab.managers.metrics_manager import MetricsTermCfg
+from mjlab.managers.observation_manager import ObservationGroupCfg, ObservationTermCfg
 from mjlab.managers.reward_manager import RewardTermCfg
+from mjlab.managers.scene_entity_config import SceneEntityCfg
 from mjlab.managers.termination_manager import TerminationTermCfg
 from mjlab.rl.config import RslRlOnPolicyRunnerCfg
 from mjlab.rl.vecenv_wrapper import RslRlVecEnvWrapper
@@ -240,6 +243,37 @@ def labyrinth_env_cfg(
     if path_progress is None:
         path_progress = PathProgress.from_json(LAYOUT_PATH)
 
+    board_cfg = SceneEntityCfg("board")
+    ball_cfg = SceneEntityCfg("ball")
+
+    actor_obs_terms = {
+        "board_base_lin_vel": ObservationTermCfg(
+            func=obs_fns.base_lin_vel, params={"asset_cfg": board_cfg}
+        ),
+        "board_base_ang_vel": ObservationTermCfg(
+            func=obs_fns.base_ang_vel, params={"asset_cfg": board_cfg}
+        ),
+        "board_projected_gravity": ObservationTermCfg(
+            func=obs_fns.projected_gravity, params={"asset_cfg": board_cfg}
+        ),
+        "board_joint_pos": ObservationTermCfg(
+            func=obs_fns.joint_pos_rel, params={"asset_cfg": board_cfg}
+        ),
+        "board_joint_vel": ObservationTermCfg(
+            func=obs_fns.joint_vel_rel, params={"asset_cfg": board_cfg}
+        ),
+        "ball_base_lin_vel": ObservationTermCfg(
+            func=obs_fns.base_lin_vel, params={"asset_cfg": ball_cfg}
+        ),
+        "ball_base_ang_vel": ObservationTermCfg(
+            func=obs_fns.base_ang_vel, params={"asset_cfg": ball_cfg}
+        ),
+        "last_action": ObservationTermCfg(func=obs_fns.last_action),
+    }
+    observations = {
+        "actor": ObservationGroupCfg(terms=actor_obs_terms),
+        "critic": ObservationGroupCfg(terms=actor_obs_terms),
+    }
     events = {"reset_scene": EventTermCfg(mode="reset", func=reset_scene_to_default)}
     actions: dict[str, ActionTermCfg] = {
         "effort": JointEffortActionCfg(
@@ -283,6 +317,7 @@ def labyrinth_env_cfg(
         episode_length_s=10,
         rewards=rewards,
         commands=commands,
+        observations=observations,
     )
     return env_cfg
 

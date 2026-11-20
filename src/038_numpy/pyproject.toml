@@ -5,7 +5,10 @@ description = "Add your description here"
 readme = "README.md"
 authors = [{ name = "Noah Jutz", email = "git@noahjutz.anonaddy.com" }]
 requires-python = ">=3.13"
-dependencies = ["numpy>=2.5.5"]
+dependencies = [
+    "marimo>=0.25.2",
+    "numpy>=2.5.5",
+]
 
 [project.scripts]
 hello-numpy = "hello_numpy:main"

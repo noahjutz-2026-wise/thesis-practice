@@ -4,6 +4,14 @@ __generated_with = "0.25.2"
 app = marimo.App(width="medium")
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # Progress Grid Lookup Table
+    """)
+    return
+
+
 @app.cell
 def _():
     import marimo as mo
@@ -33,6 +41,16 @@ def _(layout, np):
 
     wh = wh[:, [[0, 2], [1, 2]]]
     wv = wv[:, [[2, 0], [2, 1]]]
+    w = np.concat([wh, wv])
+    w.shape
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Meshgrid
+    """)
     return
 
 
@@ -50,16 +68,38 @@ def _(np):
 
 
 @app.cell
-def _(alt, mo, pd, xv, yv):
-    z = xv + yv
+def _(pd, xv, yv):
+    z = xv ** 2 + yv ** 2
     df = pd.DataFrame({'x': xv.ravel(), 'y': yv.ravel(), 'z': z.ravel()})
+    df
+    return (df,)
 
+
+@app.cell
+def _(alt, df, mo):
     chart = alt.Chart(df).mark_rect().encode(
-        x='x:O',
-        y='y:O',
+        x=alt.X('x:O').axis(values=df['x'][::5]),
+        y=alt.Y('y:O').axis(values=df['y'][::500]),
         color='z'
+    ).properties(
+        width=300,
+        height=300
     )
     mo.ui.altair_chart(chart)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Custom Matrix
+    """)
+    return
+
+
+@app.cell
+def _():
+    # todo
     return
 
 

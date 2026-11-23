@@ -46,6 +46,14 @@ def _(layout, np):
     return
 
 
+@app.cell
+def _():
+    # Maze Layout
+    X = 290
+    Y = 245
+    return X, Y
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
@@ -55,11 +63,8 @@ def _(mo):
 
 
 @app.cell
-def _(np):
+def _(X, Y, np):
     # Grid
-    X = 290
-    Y = 245
-
     x = np.linspace(-X/2, X/2, 50)
     y = np.linspace(-Y/2, Y/2, 50)
 
@@ -98,8 +103,10 @@ def _(mo):
 
 
 @app.cell
-def _():
-    # todo
+def _(X, Y, np):
+    cell = 0.001 # meters
+    origin = np.array([-X/2, -Y/2])
+    origin
     return
 
 

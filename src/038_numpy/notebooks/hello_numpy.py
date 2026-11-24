@@ -22,6 +22,7 @@ def _():
     import altair as alt
     import pandas as pd
     import math
+    import cv2
 
     return Path, alt, json, math, mo, np, pd
 
@@ -43,8 +44,14 @@ def _(layout, np):
     wh = wh[:, [[0, 2], [1, 2]]]
     wv = wv[:, [[2, 0], [2, 1]]]
     w = np.concat([wh, wv])
-    w.shape
-    return (w,)
+    # 0: N
+    # 1: 2 (start/end)
+    # 2: 2 (x/y)
+
+    # Waypoints (N, 2)
+    wp = np.array(layout["waypoints"])
+    wp.shape
+    return w, wp
 
 
 @app.cell
@@ -95,11 +102,25 @@ def _(mo):
 
 
 @app.cell
-def _(w, xv, yv):
-    def f(x, y, lines):
-        return (x <= 0) & (y <= 0)
+def _(np, w, wp, xv, yv):
+    def f(x, y, O, wp):
+        P = np.stack([x, y], axis=-1)
+        A = wp[:-1]
+        B = wp[1:]
+        AB = B - A
+        return AB.shape
 
-    f(xv, yv, w)
+    f(xv, yv, w, wp)
+    return
+
+
+@app.cell
+def _(alt, mo, pd, wp):
+    _df = pd.DataFrame(wp, columns=["x", "y"])
+    _chart = alt.Chart(_df).mark_circle().encode(
+        x='x', y='y'
+    )
+    mo.ui.altair_chart(_chart)
     return
 
 

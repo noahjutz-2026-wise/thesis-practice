@@ -69,7 +69,7 @@ def _(X, Y, alt, mo, np, pd):
     _y = np.linspace(-Y/2, Y/2, 50)
 
     _xv, _yv = np.meshgrid(_x, _y)
-    _z = _xv ** 2 + _yv ** 2
+    _z = _xv
     _df = pd.DataFrame({'x': _xv.ravel(), 'y': _yv.ravel(), 'z': _z.ravel()})
 
     _chart = alt.Chart(_df).mark_rect().encode(
@@ -96,17 +96,17 @@ def _(X, Y, math, np):
     cell = 1 # mm
     origin = np.array([-X/2, -Y/2])
     shape = (math.ceil(X / cell), math.ceil(Y / cell))
-
-    xs = origin[0] + (np.arange(shape[0]) + 0.5) * cell
-    ys = origin[1] + (np.arange(shape[1]) + 0.5) * cell
-    Xg, Yg = np.meshgrid(xs, ys, indexing='ij')
-    return Xg, Yg
+    return cell, origin, shape
 
 
 @app.cell
-def _(Xg, Yg, alt, mo, pd):
-    _z = Xg
-    _df = pd.DataFrame({'x': Xg.ravel(), 'y': Yg.ravel(), 'z': _z.ravel()})
+def _(alt, cell, mo, np, origin, pd, shape):
+    _x = origin[0] + (np.arange(shape[0]) + 0.5) * cell
+    _y = origin[1] + (np.arange(shape[1]) + 0.5) * cell
+    _xv, _yv = np.meshgrid(_x, _y, indexing='ij')
+
+    _z = _xv
+    _df = pd.DataFrame({'x': _xv.ravel(), 'y': _yv.ravel(), 'z': _z.ravel()})
 
     _chart = alt.Chart(_df).mark_rect().encode(
         x=alt.X('x:O').axis(values=_df['x'][::5]),

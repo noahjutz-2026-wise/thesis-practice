@@ -51,7 +51,7 @@ def _(layout, np):
     # Waypoints (N, 2)
     wp = np.array(layout["waypoints"])
     wp.shape
-    return w, wp
+    return (wp,)
 
 
 @app.cell
@@ -102,21 +102,25 @@ def _(mo):
 
 
 @app.cell
-def _(np, w, wp, xv, yv):
-    def f(x, y, O, wp):
-        P = np.stack([x, y], axis=-1)
-        A = wp[:-1]
-        B = wp[1:]
-        AB = B - A
-        return AB.shape
+def _(np, wp):
+    # Interpolated Waypoints
+    _M = 500
+    _s = np.diff(wp, axis=0)
+    _s = np.linalg.norm(_s, axis=-1)
+    _s = np.cumsum(_s)
+    _s = np.pad(_s, (1, 0))
 
-    f(xv, yv, w, wp)
-    return
+    _t = np.linspace(0, _s[-1], _M)
+    _x = np.interp(_t, _s, wp[:, 0])
+    _y = np.interp(_t, _s, wp[:, 1])
+    wp_interp = np.stack([_x, _y], axis=-1)
+    wp_interp
+    return (wp_interp,)
 
 
 @app.cell
-def _(alt, mo, pd, wp):
-    _df = pd.DataFrame(wp, columns=["x", "y"])
+def _(alt, mo, pd, wp_interp):
+    _df = pd.DataFrame(wp_interp, columns=["x", "y"])
     _chart = alt.Chart(_df).mark_circle().encode(
         x='x', y='y'
     )
@@ -158,7 +162,7 @@ def _(alt, cell, mo, np, origin, pd, shape):
         height=300
     )
     mo.ui.altair_chart(_chart)
-    return xv, yv
+    return
 
 
 if __name__ == "__main__":

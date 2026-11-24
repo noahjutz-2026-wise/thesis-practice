@@ -21,8 +21,9 @@ def _():
     import matplotlib.pyplot as plt
     import altair as alt
     import pandas as pd
+    import math
 
-    return Path, alt, json, mo, np, pd
+    return Path, alt, json, math, mo, np, pd
 
 
 @app.cell
@@ -57,7 +58,7 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Meshgrid
+    ## Meshgrid (Linspace)
     """)
     return
 
@@ -103,10 +104,41 @@ def _(mo):
 
 
 @app.cell
-def _(X, Y, np):
-    cell = 0.001 # meters
+def _(X, Y, math, np):
+    cell = 1 # mm
     origin = np.array([-X/2, -Y/2])
-    origin
+    shape = (math.ceil(X / cell), math.ceil(Y / cell))
+
+    xs = origin[0] + (np.arange(shape[0]) + 0.5) * cell
+    ys = origin[1] + (np.arange(shape[1]) + 0.5) * cell
+    Xg, Yg = np.meshgrid(xs, ys, indexing='ij')
+    return Xg, Yg
+
+
+@app.cell
+def _(Xg, Yg, alt, mo, pd):
+    _z = Xg
+    _df = pd.DataFrame({'x': Xg.ravel(), 'y': Yg.ravel(), 'z': _z.ravel()})
+
+    _chart = alt.Chart(_df).mark_rect().encode(
+        x=alt.X('x:O').axis(values=_df['x'][::5]),
+        y=alt.Y('y:O').axis(values=_df['y'][::500]),
+        color='z'
+    ).properties(
+        width=300,
+        height=300
+    )
+    mo.ui.altair_chart(_chart)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Value Function
+
+    $(x, y) \to p$
+    """)
     return
 
 

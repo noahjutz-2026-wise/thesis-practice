@@ -29,8 +29,8 @@ def _():
 @app.cell
 def _(Path, json):
     LAYOUT_XML = Path(__file__).parents[2] / "706_maze_build123d/src/labyrinth_game_cad/layouts/cyberrunner_hard_layout.json"
-    with open(LAYOUT_XML, "r") as f:
-        layout = json.load(f)
+    with open(LAYOUT_XML, "r") as _f:
+        layout = json.load(_f)
     return (layout,)
 
 
@@ -44,7 +44,7 @@ def _(layout, np):
     wv = wv[:, [[2, 0], [2, 1]]]
     w = np.concat([wh, wv])
     w.shape
-    return
+    return (w,)
 
 
 @app.cell
@@ -76,10 +76,30 @@ def _(X, Y, alt, mo, np, pd):
         x=alt.X('x:O').axis(values=_df['x'][::5]),
         y=alt.Y('y:O').axis(values=_df['y'][::500]),
         color='z'
-    ).properties(    width=300,
+    ).properties(    
+        width=300,
         height=300
     )
     mo.ui.altair_chart(_chart)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Value Function
+
+    $(x, y) \to p$
+    """)
+    return
+
+
+@app.cell
+def _(w, xv, yv):
+    def f(x, y, lines):
+        return (x <= 0) & (y <= 0)
+
+    f(xv, yv, w)
     return
 
 
@@ -103,31 +123,21 @@ def _(X, Y, math, np):
 def _(alt, cell, mo, np, origin, pd, shape):
     _x = origin[0] + (np.arange(shape[0]) + 0.5) * cell
     _y = origin[1] + (np.arange(shape[1]) + 0.5) * cell
-    _xv, _yv = np.meshgrid(_x, _y, indexing='ij')
+    xv, yv = np.meshgrid(_x, _y, indexing='ij')
 
-    _z = _xv
-    _df = pd.DataFrame({'x': _xv.ravel(), 'y': _yv.ravel(), 'z': _z.ravel()})
+    _z = xv
+    _df = pd.DataFrame({'x': xv.ravel(), 'y': yv.ravel(), 'z': _z.ravel()})
 
     _chart = alt.Chart(_df).mark_rect().encode(
-        x=alt.X('x:O').axis(values=_df['x'][::5]),
-        y=alt.Y('y:O').axis(values=_df['y'][::500]),
+        x=alt.X('x:O').axis(values=_df['x'][::5000]),
+        y=alt.Y('y:O').axis(values=_df['y'][::5000]),
         color='z'
     ).properties(
         width=300,
         height=300
     )
     mo.ui.altair_chart(_chart)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Value Function
-
-    $(x, y) \to p$
-    """)
-    return
+    return xv, yv
 
 
 if __name__ == "__main__":

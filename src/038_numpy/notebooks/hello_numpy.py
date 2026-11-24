@@ -64,34 +64,22 @@ def _(mo):
 
 
 @app.cell
-def _(X, Y, np):
-    # Grid
-    x = np.linspace(-X/2, X/2, 50)
-    y = np.linspace(-Y/2, Y/2, 50)
+def _(X, Y, alt, mo, np, pd):
+    _x = np.linspace(-X/2, X/2, 50)
+    _y = np.linspace(-Y/2, Y/2, 50)
 
-    xv, yv = np.meshgrid(x, y)
-    return xv, yv
+    _xv, _yv = np.meshgrid(_x, _y)
+    _z = _xv ** 2 + _yv ** 2
+    _df = pd.DataFrame({'x': _xv.ravel(), 'y': _yv.ravel(), 'z': _z.ravel()})
 
-
-@app.cell
-def _(pd, xv, yv):
-    z = xv ** 2 + yv ** 2
-    df = pd.DataFrame({'x': xv.ravel(), 'y': yv.ravel(), 'z': z.ravel()})
-    df
-    return (df,)
-
-
-@app.cell
-def _(alt, df, mo):
-    chart = alt.Chart(df).mark_rect().encode(
-        x=alt.X('x:O').axis(values=df['x'][::5]),
-        y=alt.Y('y:O').axis(values=df['y'][::500]),
+    _chart = alt.Chart(_df).mark_rect().encode(
+        x=alt.X('x:O').axis(values=_df['x'][::5]),
+        y=alt.Y('y:O').axis(values=_df['y'][::500]),
         color='z'
-    ).properties(
-        width=300,
+    ).properties(    width=300,
         height=300
     )
-    mo.ui.altair_chart(chart)
+    mo.ui.altair_chart(_chart)
     return
 
 

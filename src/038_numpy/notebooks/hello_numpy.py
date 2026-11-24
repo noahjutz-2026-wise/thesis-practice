@@ -22,26 +22,22 @@ def _(mo):
 
 @app.cell
 def _():
-    import json
-    import math
-    from pathlib import Path
-
-    import altair as alt
-    import cv2
     import marimo as mo
-    import matplotlib.pyplot as plt
     import numpy as np
+    from pathlib import Path
+    import json
+    import matplotlib.pyplot as plt
+    import altair as alt
     import pandas as pd
+    import math
+    import cv2
 
     return Path, alt, json, math, mo, np, pd
 
 
 @app.cell
 def _(Path, json):
-    LAYOUT_XML = (
-        Path(__file__).parents[2]
-        / "706_maze_build123d/src/labyrinth_game_cad/layouts/cyberrunner_hard_layout.json"
-    )
+    LAYOUT_XML = Path(__file__).parents[2] / "706_maze_build123d/src/labyrinth_game_cad/layouts/cyberrunner_hard_layout.json"
     with open(LAYOUT_XML, "r") as _f:
         layout = json.load(_f)
     return (layout,)
@@ -69,8 +65,8 @@ def _(layout, np):
 @app.cell
 def _():
     # Maze Layout
-    X = 290 / 1000  # mm to m
-    Y = 245 / 1000  # mm to m
+    X = 290 / 1000 # mm to m
+    Y = 245 / 1000 # mm to m
     return X, Y
 
 
@@ -84,22 +80,20 @@ def _(mo):
 
 @app.cell
 def _(X, Y, alt, mo, np, pd):
-    _x = np.linspace(-X / 2, X / 2, 50)
-    _y = np.linspace(-Y / 2, Y / 2, 50)
+    _x = np.linspace(-X/2, X/2, 50)
+    _y = np.linspace(-Y/2, Y/2, 50)
 
     _xv, _yv = np.meshgrid(_x, _y)
     _z = _xv
-    _df = pd.DataFrame({"x": _xv.ravel(), "y": _yv.ravel(), "z": _z.ravel()})
+    _df = pd.DataFrame({'x': _xv.ravel(), 'y': _yv.ravel(), 'z': _z.ravel()})
 
-    _chart = (
-        alt.Chart(_df)
-        .mark_rect()
-        .encode(
-            x=alt.X("x:O").axis(values=_df["x"][::5]),
-            y=alt.Y("y:O").axis(values=_df["y"][::500]),
-            color="z",
-        )
-        .properties(width=300, height=300)
+    _chart = alt.Chart(_df).mark_rect().encode(
+        x=alt.X('x:O').axis(values=_df['x'][::5]),
+        y=alt.Y('y:O').axis(values=_df['y'][::500]),
+        color='z'
+    ).properties(    
+        width=300,
+        height=300
     )
     mo.ui.altair_chart(_chart)
     return
@@ -130,9 +124,65 @@ def _(np, wp):
 
 
 @app.cell(hide_code=True)
-def _(alt, mo, pd, wp_interp):
+def _(alt, mo, np, pd, wp_interp):
     _df = pd.DataFrame(wp_interp, columns=["x", "y"])
-    _chart = alt.Chart(_df).mark_circle().encode(x="x", y="y")
+    _df["i"] = np.arange(len(_df))
+    _chart = alt.Chart(_df).mark_circle().encode(
+        x='x', y='y', color='i'
+    )
+    mo.ui.altair_chart(_chart)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Naive Lookup Grid
+    """)
+    return
+
+
+@app.cell
+def _(X, Y, math, np):
+    cell = 0.001 # m
+    origin = np.array([-X/2, -Y/2])
+    shape = (math.ceil(X / cell), math.ceil(Y / cell))
+    return cell, origin, shape
+
+
+@app.cell
+def _(cell, np, origin, shape):
+    _x = origin[0] + (np.arange(shape[0]) + 0.5) * cell
+    _y = origin[1] + (np.arange(shape[1]) + 0.5) * cell
+    xv, yv = np.meshgrid(_x, _y, indexing='ij')
+    return xv, yv
+
+
+@app.cell
+def _(np, wp_interp, xv, yv):
+    P = np.stack([xv, yv], axis=-1)
+    _v = P[..., np.newaxis, :]
+    _v = _v - wp_interp
+    _d = np.linalg.norm(_v, axis=-1)
+
+    map_naive = _d.argmin(axis=-1)
+    map_naive.shape
+    return (map_naive,)
+
+
+@app.cell(hide_code=True)
+def _(X, Y, alt, map_naive, mo, pd, xv, yv):
+    _m = map_naive[:, ::-1]
+    _df = pd.DataFrame({'x': xv.ravel(), 'y': yv.ravel(), 'z': _m.ravel()})
+
+    _chart = alt.Chart(_df).mark_rect().encode(
+        x=alt.X('x:O').axis(labels=False),
+        y=alt.Y('y:O').axis(labels=False),
+        color='z'
+    ).properties(
+        width=X * 2000,
+        height=Y * 2000
+    )
     mo.ui.altair_chart(_chart)
     return
 
@@ -151,60 +201,6 @@ def _(np):
         P = np.stack([xv, yv], axis=-1)
         return yv
 
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Custom Matrix
-    """)
-    return
-
-
-@app.cell
-def _(X, Y, math, np):
-    cell = 0.001  # m
-    origin = np.array([-X / 2, -Y / 2])
-    shape = (math.ceil(X / cell), math.ceil(Y / cell))
-    return cell, origin, shape
-
-
-@app.cell
-def _(cell, np, origin, shape):
-    _x = origin[0] + (np.arange(shape[0]) + 0.5) * cell
-    _y = origin[1] + (np.arange(shape[1]) + 0.5) * cell
-    xv, yv = np.meshgrid(_x, _y, indexing="ij")
-    return xv, yv
-
-
-@app.cell
-def _(np, wp_interp, xv, yv):
-    P = np.stack([xv, yv], axis=-1)
-    _v = P[..., np.newaxis, :]
-    _v = _v - wp_interp
-    _d = np.linalg.norm(_v, axis=-1)
-
-    z = _d.min(axis=-1)
-    _v.shape
-    return (z,)
-
-
-@app.cell(hide_code=True)
-def _(X, Y, alt, mo, pd, xv, yv, z):
-    _df = pd.DataFrame({"x": xv.ravel(), "y": yv.ravel(), "z": z.ravel()})
-
-    _chart = (
-        alt.Chart(_df)
-        .mark_rect()
-        .encode(
-            x=alt.X("x:O").axis(values=_df["x"][::5000]),
-            y=alt.Y("y:O").axis(values=_df["y"][::5000]),
-            color="z",
-        )
-        .properties(width=X * 2000, height=Y * 2000)
-    )
-    mo.ui.altair_chart(_chart)
     return
 
 
